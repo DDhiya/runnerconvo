@@ -6,9 +6,10 @@ every runbook on this box in your head at once. **Where it deviates from those t
 why**, because this is the first PHP app on the box and several of their assumptions do not carry
 over.
 
-**Not yet deployed.** Everything below is the plan to execute on first deploy, not a description of
-a running instance — update this file's language once it actually is live (see
-`../myfinance/docs/deploy.md`'s "This is live" framing for what that should look like afterward).
+**This is live**, deployed and verified end-to-end (including from off-box) at
+**https://convo.dhiyadanial.my**. Everything below reflects the actual running instance.
+
+First deployed 2026-09-08. Cert expires 2026-12-07; `certbot.timer` is active and renews it.
 
 ## SSH access (read this before anything else)
 
@@ -51,11 +52,12 @@ foreach($l["packages"] as $p){ $v=$p["require"]["php"]??null;
 PHP 8.4 is not in Ubuntu 24.04's repos, so the `ondrej/php` PPA is needed. **It is not currently on
 the box** — adding it is the one third-party repo this deploy introduces, and it is unavoidable.
 
-## The live instance (once deployed)
+## The live instance
 
 Same Ubuntu 24.04 VPS as `dhiya_agent`/`myfinance`/`myfitness` (`160.30.5.87`), running as its own
-unprivileged system user `runnerconvo`, no systemd unit, temporary public hostname
-`convo.dhiyadanial.my`.
+unprivileged system user `runnerconvo` (uid 993), no systemd unit, temporary public hostname
+`convo.dhiyadanial.my`. PHP 8.4.25 via php-fpm pool `runnerconvo` on
+`/run/php/php8.4-fpm-runnerconvo.sock`.
 
 Code at `/opt/runnerconvo/runnerconvo` (a single checkout; the Vite build output in
 `public/build/` is synced separately — see below). The VPS clones this repo over SSH using a
@@ -100,8 +102,10 @@ apt install -y php8.4-fpm php8.4-cli php8.4-mbstring php8.4-xml php8.4-curl \
                php8.4-zip php8.4-intl php8.4-bcmath
 # php8.4-mysql is NOT needed yet — add it when the registration form lands.
 
-# Composer.
-curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+# Composer — Ubuntu's package, not the getcomposer.org installer. 2.7.1 is older than
+# local (2.10.2) but only ever runs `install` from a committed lock file here, so the
+# resolver version is irrelevant. Avoids piping a downloaded script into php as root.
+apt install -y composer
 
 # mpm_event is in use, so PHP must go over FastCGI. proxy_fcgi is currently DISABLED.
 a2enmod proxy_fcgi && systemctl reload apache2
@@ -191,8 +195,13 @@ npm run build
 scp -r public/build 160.30.5.87:/tmp/rc-build
 ssh 160.30.5.87 "rm -rf /opt/runnerconvo/runnerconvo/public/build \
   && mv /tmp/rc-build /opt/runnerconvo/runnerconvo/public/build \
-  && chown -R runnerconvo:runnerconvo /opt/runnerconvo/runnerconvo/public/build"
+  && chown -R runnerconvo:runnerconvo /opt/runnerconvo/runnerconvo/public/build \
+  && chmod -R go+rX /opt/runnerconvo/runnerconvo/public/build"
 ```
+
+The `chmod go+rX` matters: `scp` preserves your local mode bits, and Apache serves these files as
+`www-data` (via the `runnerconvo` group). Without it the CSS and JS 403 and the page renders
+unstyled.
 
 Back on the VPS as `root` — php-fpm pool, caches, vhost, TLS:
 
@@ -213,8 +222,14 @@ sudo -u runnerconvo php artisan view:cache
 scp deploy/runnerconvo.conf 160.30.5.87:/tmp/runnerconvo.conf
 ssh 160.30.5.87 "mv /tmp/runnerconvo.conf /etc/apache2/sites-available/runnerconvo.conf \
   && a2ensite runnerconvo && apache2ctl configtest && systemctl reload apache2"
-ssh 160.30.5.87 "certbot --apache -d convo.dhiyadanial.my"
+ssh 160.30.5.87 "certbot --apache -d convo.dhiyadanial.my \
+  --non-interactive --agree-tos --register-unsafely-without-email --redirect"
 ```
+
+`--redirect` is what adds the `:80 -> :443` rewrite to `runnerconvo.conf` and generates
+`runnerconvo-le-ssl.conf`. Note that Cloudflare already terminates TLS at its edge, so the site
+answered on `https://` before certbot ran — the origin cert is what lets Cloudflare's SSL mode be
+Full (strict) rather than Flexible, matching every other site on this box.
 
 ### DNS is already in place
 
