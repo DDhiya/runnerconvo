@@ -159,7 +159,7 @@ APP_KEY=
 APP_DEBUG=false
 APP_URL=https://convo.dhiyadanial.my
 
-APP_LOCALE=ms
+APP_LOCALE=en
 APP_FALLBACK_LOCALE=en
 
 LOG_CHANNEL=stack
