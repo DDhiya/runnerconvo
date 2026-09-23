@@ -13,9 +13,11 @@
         <div class="grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
 
             <div class="lg:col-span-2">
-                <span class="flex items-center gap-2 text-lg font-bold tracking-tight text-ink">
-                    <span class="grid h-8 w-8 place-items-center rounded-xl bg-gradient-to-br from-brand-600 to-accent-500 text-sm font-black text-white">J</span>
-                    Jubah<span class="gradient-text -ml-2">Runner</span>
+                <span class="flex items-center gap-2.5 text-lg font-bold tracking-tight text-ink">
+                    <img src="{{ asset('images/logo-mark-64.png') }}" alt="{{ config('app.name') }}" width="36" height="36" class="h-9 w-9">
+                    <span aria-hidden="true">
+                        <span class="text-brand-600">Jubah</span><span class="text-accent-400">Panda</span>
+                    </span>
                 </span>
                 <p class="mt-4 max-w-sm text-sm leading-relaxed text-ink-soft">
                     {{ __('landing.footer.tagline') }}

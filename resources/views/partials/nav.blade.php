@@ -14,10 +14,12 @@
     <nav class="mx-auto flex h-16 w-full max-w-6xl items-center justify-between gap-4 px-5 sm:px-8"
          aria-label="{{ config('app.name') }}">
 
-        {{-- Wordmark. TODO: swap for a logo mark once you have one. --}}
-        <a href="{{ route('home') }}" class="flex items-center gap-2 text-lg font-bold tracking-tight text-ink">
-            <span class="grid h-8 w-8 place-items-center rounded-xl bg-gradient-to-br from-brand-600 to-accent-500 text-sm font-black text-white shadow-md shadow-brand-500/25">J</span>
-            <span>Jubah<span class="gradient-text">Runner</span></span>
+        <a href="{{ route('home') }}" class="flex items-center gap-2.5 text-lg font-bold tracking-tight text-ink">
+            <img src="{{ asset('images/logo-mark-64.png') }}" alt="" width="36" height="36" class="h-9 w-9">
+            <span class="sr-only">{{ config('app.name') }}</span>
+            <span aria-hidden="true">
+                <span class="text-brand-600">Jubah</span><span class="text-accent-400">Panda</span>
+            </span>
         </a>
 
         {{-- Desktop links --}}

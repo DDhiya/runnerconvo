@@ -1,5 +1,5 @@
 /**
- * JubahRunner landing page behaviour.
+ * JubahPanda landing page behaviour.
  *
  * Deliberately small: the language switch is server-side, and the FAQ uses
  * native <details>, so this file only handles the mobile menu, the sticky

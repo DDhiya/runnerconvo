@@ -9,23 +9,25 @@
     ];
 @endphp
 
-<section id="problem" class="section">
-    <div class="reveal max-w-2xl">
-        <span class="eyebrow">{{ __('landing.problem.eyebrow') }}</span>
-        <h2 class="section-title">{{ __('landing.problem.title') }}</h2>
-    </div>
+<section id="problem" class="section-tint">
+    <div class="section">
+        <div class="reveal max-w-2xl">
+            <span class="eyebrow">{{ __('landing.problem.eyebrow') }}</span>
+            <h2 class="section-title">{{ __('landing.problem.title') }}</h2>
+        </div>
 
-    <div class="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        @foreach (__('landing.problem.items') as $i => $item)
-            <div class="reveal glass-card p-7" style="transition-delay: {{ $i * 90 }}ms">
-                <span class="grid h-11 w-11 place-items-center rounded-xl bg-gradient-to-br from-brand-100 to-accent-100 ring-1 ring-white/60">
-                    <svg class="h-5 w-5 text-brand-700" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" aria-hidden="true">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="{{ $icons[$i] ?? $icons[0] }}"/>
-                    </svg>
-                </span>
-                <h3 class="mt-5 text-lg font-semibold">{{ $item['title'] }}</h3>
-                <p class="mt-2 text-sm leading-relaxed text-ink-soft">{{ $item['body'] }}</p>
-            </div>
-        @endforeach
+        <div class="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            @foreach (__('landing.problem.items') as $i => $item)
+                <div class="reveal glass-card p-7" style="transition-delay: {{ $i * 90 }}ms">
+                    <span class="grid h-11 w-11 place-items-center rounded-xl bg-gradient-to-br from-brand-100 to-accent-100 ring-1 ring-white/60">
+                        <svg class="h-5 w-5 text-brand-700" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="{{ $icons[$i] ?? $icons[0] }}"/>
+                        </svg>
+                    </span>
+                    <h3 class="mt-5 text-lg font-semibold">{{ $item['title'] }}</h3>
+                    <p class="mt-2 text-sm leading-relaxed text-ink-soft">{{ $item['body'] }}</p>
+                </div>
+            @endforeach
+        </div>
     </div>
 </section>

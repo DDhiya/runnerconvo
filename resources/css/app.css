@@ -4,40 +4,41 @@
 @source '../../storage/framework/views/*.php';
 
 /* ---------------------------------------------------------------------------
-   Design tokens — JubahRunner
-   Modern light theme: soft violet -> rose -> blue gradients on an off-white
-   ground. Light only by design; see `color-scheme` in the base layer.
+   Design tokens — JubahPanda
+   Pulled straight from the panda mascot mark: deep magenta cape + soft
+   blush-pink circle. Light only by design; see `color-scheme` in the base
+   layer.
 --------------------------------------------------------------------------- */
 @theme {
     --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
         'Segoe UI Symbol', 'Noto Color Emoji';
 
-    /* Brand — violet */
-    --color-brand-50: #f6f4ff;
-    --color-brand-100: #ede9fe;
-    --color-brand-200: #ddd6fe;
-    --color-brand-300: #c4b5fd;
-    --color-brand-400: #a78bfa;
-    --color-brand-500: #7c5cfc;
-    --color-brand-600: #6b46f0;
-    --color-brand-700: #5a35d6;
-    --color-brand-800: #4a2bb0;
-    --color-brand-900: #3d248f;
+    /* Brand — deep magenta (the cape, the "Jubah" wordmark) */
+    --color-brand-50: #fdf2f6;
+    --color-brand-100: #fbe4ec;
+    --color-brand-200: #f6c7da;
+    --color-brand-300: #ef9fbe;
+    --color-brand-400: #e26e9b;
+    --color-brand-500: #d0407a;
+    --color-brand-600: #c2255c;
+    --color-brand-700: #9c1c49;
+    --color-brand-800: #7a173b;
+    --color-brand-900: #5c1330;
 
-    /* Accent — rose */
-    --color-accent-100: #ffe4e6;
-    --color-accent-300: #fda4af;
-    --color-accent-400: #fb7185;
-    --color-accent-500: #f43f5e;
-    --color-accent-600: #e11d48;
+    /* Accent — blush pink (the badge circle, the "Panda" wordmark) */
+    --color-accent-100: #fde3ec;
+    --color-accent-300: #f9a8c6;
+    --color-accent-400: #f2739f;
+    --color-accent-500: #ea5389;
+    --color-accent-600: #d63873;
 
     /* Text */
-    --color-ink: #1e1b31;
-    --color-ink-soft: #55506e;
-    --color-ink-muted: #857fa0;
+    --color-ink: #271420;
+    --color-ink-soft: #6b4c5a;
+    --color-ink-muted: #9c7f8a;
 
     /* Surfaces */
-    --color-canvas: #fbfaff;
+    --color-canvas: #fef8fa;
 }
 
 @layer base {
@@ -121,6 +122,19 @@
     .section-title {
         @apply mt-4 text-3xl font-bold tracking-tight sm:text-4xl;
     }
+
+    /* Full-bleed tint band. Wraps a .section to break up the page rhythm
+       without every block sitting on the same flat wash. */
+    .section-tint {
+        @apply border-y border-black/5 bg-white/50;
+    }
+
+    /* Small stat card that floats beside the hero mascot. Same frosted
+       treatment as .glass-card; Tailwind v4 cannot @apply a custom class, so
+       it is repeated here rather than composed. */
+    .badge-float {
+        @apply absolute flex items-center gap-3 rounded-2xl bg-white/80 px-4 py-3 shadow-lg shadow-brand-900/10 ring-1 ring-black/5 backdrop-blur-xl;
+    }
 }
 
 @layer utilities {
@@ -137,6 +151,21 @@
     .js .reveal.is-visible {
         opacity: 1;
         transform: none;
+    }
+
+    /* Gentle idle bob for the hero mascot. Neutralised for reduced-motion
+       users by the global override below. */
+    .animate-float {
+        animation: float 6s ease-in-out infinite;
+    }
+}
+
+@keyframes float {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-14px);
     }
 }
 
