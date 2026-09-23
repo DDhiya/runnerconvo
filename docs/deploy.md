@@ -7,14 +7,14 @@ why**, because this is the first PHP app on the box and several of their assumpt
 over.
 
 **This is live**, deployed and verified end-to-end (including from off-box) at
-**https://convo.dhiyadanial.my**. Everything below reflects the actual running instance.
+**https://jubahpanda.my** (canonical), with `www.jubahpanda.my` and `convo.dhiyadanial.my` both
+answering as aliases on the same vhost and certificate. Everything below reflects the actual
+running instance.
 
-First deployed 2026-09-08. Cert expires 2026-12-07; `certbot.timer` is active and renews it.
-
-**`jubahpanda.my` is half-wired as of 2026-09-23** — the zone is on Cloudflare and proxying to this
-box, and the `:80` vhost aliases it, so the origin serves the right app over HTTP. The TLS half is
-not done: the cert still covers `convo.dhiyadanial.my` only, and the `:443` vhost has no alias. See
-"Finishing jubahpanda.my" at the bottom for the two commands that close it out.
+First deployed 2026-09-08 as `convo.dhiyadanial.my`. Switched to `jubahpanda.my` as canonical on
+2026-09-23 — see "Finishing jubahpanda.my" at the bottom for exactly what that switch was and how
+to repeat the pattern for a future domain change. Cert (one lineage, three names) expires
+2026-12-22; `certbot.timer` is active and renews it.
 
 ## SSH access (read this before anything else)
 
@@ -60,8 +60,9 @@ the box** — adding it is the one third-party repo this deploy introduces, and 
 ## The live instance
 
 Same Ubuntu 24.04 VPS as `dhiya_agent`/`myfinance`/`myfitness` (`160.30.5.87`), running as its own
-unprivileged system user `runnerconvo` (uid 993), no systemd unit, temporary public hostname
-`convo.dhiyadanial.my`. PHP 8.4.25 via php-fpm pool `runnerconvo` on
+unprivileged system user `runnerconvo` (uid 993), no systemd unit, canonical public hostname
+`jubahpanda.my` (with `www.jubahpanda.my` and the original `convo.dhiyadanial.my` both aliased on
+the same vhost and cert — see "Domain history" below). PHP 8.4.25 via php-fpm pool `runnerconvo` on
 `/run/php/php8.4-fpm-runnerconvo.sock`.
 
 Code at `/opt/runnerconvo/runnerconvo` (a single checkout; the Vite build output in
@@ -72,8 +73,9 @@ never shared with any of them.
 
 ### The hostname is deliberately not hardcoded
 
-`convo.dhiyadanial.my` is temporary; the team is moving to `jubahpanda.my`. The hostname therefore
-appears in exactly **two** places, both outside application code:
+`jubahpanda.my` is canonical now (see "Domain history" below for how the switch was done), but the
+principle that motivated keeping it out of application code still holds — the hostname appears in
+exactly **two** places, both outside application code:
 
 1. `ServerName`/`ServerAlias` in `deploy/runnerconvo.conf` — the only occurrence in this repo.
 2. `APP_URL` in `/opt/runnerconvo/runnerconvo/.env` — VPS only, never in git.
@@ -289,17 +291,21 @@ cache.
 ```bash
 ssh 160.30.5.87 "systemctl status php8.4-fpm apache2 --no-pager | head -20"
 ssh 160.30.5.87 "ls -l /run/php/php8.4-fpm-runnerconvo.sock"   # srw-rw---- www-data www-data
-curl -sI https://convo.dhiyadanial.my/                          # 200, after certbot
-curl -s  https://convo.dhiyadanial.my/ | grep -o '<html lang="[^"]*"'   # lang="ms"
-curl -s  https://convo.dhiyadanial.my/lang/en -o /dev/null -w '%{http_code}\n'  # 302
+curl -sI https://jubahpanda.my/                                 # 200, after certbot
+curl -s  https://jubahpanda.my/ | grep -o '<html lang="[^"]*"'   # lang="en" (default; see SetLocale)
+curl -s  https://jubahpanda.my/lang/ms -o /dev/null -w '%{http_code}\n'  # 302
 ```
+
+Also check `www.jubahpanda.my` and `convo.dhiyadanial.my` the same way — all three are aliases on
+one vhost and cert, so a break in the vhost config affects all three at once even though only one
+is canonical.
 
 Then check in a real browser, not just curl:
 
 - The page renders **styled** — unstyled means `public/build/` did not sync.
 - The **BM/EN toggle** flips the page and the choice survives a refresh (this is the only thing on
   the site that needs working sessions and a writable `storage/`).
-- `https://convo.dhiyadanial.my/.env` returns **404**, not the file. If it ever returns content, the
+- `https://jubahpanda.my/.env` returns **404**, not the file. If it ever returns content, the
   DocumentRoot is wrong — it must point at `public/`, not the repo root.
 - `APP_DEBUG=false` is doing its job: a deliberate 404 shows Laravel's plain error page, not a
   stack trace.
@@ -314,65 +320,99 @@ curl -sI https://finance.dhiyadanial.my/ | head -1
 curl -sI https://fitness.dhiyadanial.my/ | head -1
 ```
 
-## Finishing jubahpanda.my
+## Domain history: convo.dhiyadanial.my → jubahpanda.my
 
 The real domain is **jubahpanda.my** (not `jubahrunner.my`, which this file used to guess at and
 was never registered). Registered at Namecheap, zone on Cloudflare — `jermaine`/`kimora.ns`, the
-same pair every other site here uses — and already proxying apex + `www` to this box.
+same pair every other site here uses.
 
-**Step 1 is done** (2026-09-23): the `:80` vhost carries
-`ServerAlias jubahpanda.my www.jubahpanda.my`.
-
-That alias is not cosmetic. Apache's default vhost on this box is `admin.dhiyadanial.my` (it sorts
-first in `sites-enabled`), so before the alias existed `jubahpanda.my` was being served **the admin
-app**, not this one. Any new hostname pointed at this IP does the same until something claims it —
-check with `apache2ctl -S`, whose first `default server` line names the catch-all.
-
-The two commands left, in this order — the alias on `:443` must come *after* the cert, or
-Cloudflare Full (strict) sees a cert that does not cover the hostname and serves a 526:
+This happened in two steps, a few hours apart on 2026-09-23, because DNS propagation outran the
+plan: `jubahpanda.my` started resolving through Cloudflare to this box's IP *before* Apache knew
+about it, which meant it was being served by **the admin app** — Apache's default vhost here is
+`admin.dhiyadanial.my` (it sorts first in `sites-enabled`), and any hostname pointed at this IP
+without a matching `ServerName`/`ServerAlias` falls through to whatever `apache2ctl -S`'s first
+`default server` line names. So step 1 was purely defensive — claim the hostname immediately, even
+before TLS or canonical status were sorted out:
 
 ```bash
-# 1. Expand the existing cert lineage to cover all three names. --expand replaces the
-#    lineage only on success, so a failure leaves the working convo cert untouched.
-#    Dry-run first; it costs nothing and proves HTTP-01 survives the Cloudflare proxy:
+# Alias it on :80 first — no cert needed for that, and it stops the admin app leaking
+# the wrong content the moment DNS resolves.
+ssh 160.30.5.87 "sed -i '/ServerName convo.dhiyadanial.my/a\\    ServerAlias jubahpanda.my www.jubahpanda.my' \
+  /etc/apache2/sites-available/runnerconvo.conf && apache2ctl configtest && systemctl reload apache2"
+
+# Expand the existing cert lineage to cover all three names. --expand replaces the
+# lineage only on success, so a failure leaves the working convo cert untouched.
 ssh 160.30.5.87 "certbot certonly --apache --cert-name convo.dhiyadanial.my \
   -d convo.dhiyadanial.my -d jubahpanda.my -d www.jubahpanda.my \
-  --expand --non-interactive --agree-tos --dry-run"     # then drop --dry-run
+  --expand --non-interactive --agree-tos"
 
-# 2. Alias the :443 vhost. No SSLCertificateFile edit: the lineage name is unchanged,
-#    so /etc/letsencrypt/live/convo.dhiyadanial.my/ now simply covers three names.
+# Alias :443 too, only after the cert covers the name — doing this first would have
+# Cloudflare Full (strict) hit a cert that doesn't cover the hostname and serve a 526.
 ssh 160.30.5.87 "sed -i '/ServerName convo.dhiyadanial.my/a\\    ServerAlias jubahpanda.my www.jubahpanda.my' \
   /etc/apache2/sites-available/runnerconvo-le-ssl.conf \
   && apache2ctl configtest && systemctl reload apache2"
 ```
 
-Verify from off-box, and note that a plain `curl` only proves Cloudflare answered — check the
-origin too:
+Step 2, once `jubahpanda.my` was confirmed working as an alias, made it canonical — swap
+`ServerName` and `ServerAlias` in **both** vhosts (`convo.dhiyadanial.my` becomes the alias),
+point `APP_URL` at it, and re-cache:
 
 ```bash
-curl -sI https://jubahpanda.my/ | head -1                      # 200, not 526
-curl -s https://jubahpanda.my/ | grep -o '<html lang="[^"]*"'
-ssh 160.30.5.87 "curl -s -o /dev/null -w '%{http_code}\n' -H 'Host: jubahpanda.my' http://127.0.0.1/"
-```
+ssh 160.30.5.87 "sed -i \
+  -e 's/ServerName convo.dhiyadanial.my/ServerName jubahpanda.my/' \
+  -e 's/ServerAlias jubahpanda.my www.jubahpanda.my/ServerAlias www.jubahpanda.my convo.dhiyadanial.my/' \
+  /etc/apache2/sites-available/runnerconvo.conf \
+  /etc/apache2/sites-available/runnerconvo-le-ssl.conf \
+  && apache2ctl configtest && systemctl reload apache2"
 
-Then, when you want jubahpanda.my to be the canonical name rather than an alias, swap `ServerName`
-and the alias in both vhosts, point `APP_URL` at it and re-cache:
-
-```bash
 ssh 160.30.5.87 "cd /opt/runnerconvo/runnerconvo \
   && sudo -u runnerconvo sed -i 's|^APP_URL=.*|APP_URL=https://jubahpanda.my|' .env \
   && sudo -u runnerconvo php artisan config:cache"
 ```
 
 `APP_URL` is less load-bearing than it looks — canonical/`og:url` come from the request host, so
-both names already self-describe correctly. It matters for URLs generated off-request (CLI, mail).
+every alias already self-describes correctly regardless of `APP_URL`. It matters for URLs generated
+off-request (CLI, mail), and for which name Apache's `:80` redirect sends *unmatched* requests to
+(anything hitting this vhost by IP with no recognized `Host` falls back to `ServerName`).
 
-Also update `ServerName`/`ServerAlias` in this repo's `deploy/runnerconvo.conf` so the committed
-copy matches reality. **No application code changes** — that is the entire point of keeping the
-hostname out of the codebase.
+**One thing step 2 broke that is easy to miss**: certbot's original `--redirect` (run back when
+`convo.dhiyadanial.my` was the only name) wrote an HTTP→HTTPS `RewriteCond` matching that one
+hostname by name, not "whatever `ServerName` currently is". Swapping `ServerName` did not update
+it, so plain `http://jubahpanda.my` stopped redirecting to HTTPS at the origin — invisible if
+Cloudflare's SSL/TLS mode is Full (strict), since Cloudflare then always speaks HTTPS to the
+origin regardless of what the visitor requested, but wrong at the origin all the same. Fixed by
+replacing the single `RewriteCond` with an OR chain covering all three names:
 
-Keep `convo.dhiyadanial.my` resolving and its cert alive for a while after the switch; anything
-already shared in a WhatsApp group still points there.
+```apache
+RewriteEngine on
+RewriteCond %{SERVER_NAME} =jubahpanda.my [OR]
+RewriteCond %{SERVER_NAME} =www.jubahpanda.my [OR]
+RewriteCond %{SERVER_NAME} =convo.dhiyadanial.my
+RewriteRule ^ https://%{SERVER_NAME}%{REQUEST_URI} [END,NE,R=permanent]
+```
+
+This block is certbot-managed (see the note at the top of `deploy/runnerconvo.conf`) and is not
+part of the committed vhost, so nothing here needed a repo change — but re-check it by hand after
+any future `ServerName` swap; certbot will not do it for you.
+
+Verify a domain switch the same way this one was checked, from off-box (a plain `curl` only proves
+Cloudflare answered) and from the origin directly:
+
+```bash
+for h in jubahpanda.my www.jubahpanda.my convo.dhiyadanial.my; do
+  curl -sI https://$h/ | head -1                                              # 200, not 526
+  curl -sI http://$h/  | grep -i location                                     # https://$h/, not another host
+  ssh 160.30.5.87 "curl -s -o /dev/null -w '%{http_code}\n' -H 'Host: $h' http://127.0.0.1/"
+done
+curl -s https://jubahpanda.my/ | grep -oE '<link rel="canonical"[^>]*>|<meta property="og:url"[^>]*>'
+```
+
+`deploy/runnerconvo.conf` in this repo carries the canonical `ServerName`/`ServerAlias`, kept in
+sync with the installed copy by hand — **no application code changes**, which is the entire point
+of keeping the hostname out of the codebase.
+
+Keep `convo.dhiyadanial.my` resolving and aliased indefinitely; anything already shared in a
+WhatsApp group still points there, and it costs nothing to keep answering on the same cert.
 
 ## Do not
 
