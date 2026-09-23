@@ -136,7 +136,7 @@ return [
         'items' => [
             [
                 'q' => 'Adakah JubahPanda berkaitan dengan UMPSA?',
-                'a' => 'Tidak. Kami sebuah pasukan bebas terdiri daripada pelajar dan graduan yang menawarkan perkhidmatan kemudahan. Semua urusan rasmi jubah kekal dengan pihak universiti.',
+                'a' => 'Tidak. Kami sebuah pasukan bebas yang menawarkan perkhidmatan runner ini. Semua urusan rasmi jubah kekal dengan pihak universiti.',
             ],
             [
                 'q' => 'Apa yang kami perlukan daripada anda?',

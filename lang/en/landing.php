@@ -136,7 +136,7 @@ return [
         'items' => [
             [
                 'q' => 'Is JubahPanda affiliated with UMPSA?',
-                'a' => 'No. We are an independent team of students and graduates offering a convenience service. All official robe matters remain with the university.',
+                'a' => 'No. We are an independent team offering a convenience service. All official robe matters remain with the university.',
             ],
             [
                 'q' => 'What do you need from me?',
