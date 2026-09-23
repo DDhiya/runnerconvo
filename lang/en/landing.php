@@ -3,7 +3,7 @@
 return [
 
     'meta' => [
-        'title' => 'JubahRunner — Convocation robe runner for UMPSA graduates',
+        'title' => 'JubahPanda — Convocation robe runner for UMPSA graduates',
         'description' => 'Skip the queue at UMPSA. Our team collects your convocation robe, stores it safely, and hands it to you 1-2 days before your graduation.',
     ],
 
@@ -86,7 +86,7 @@ return [
             ],
             [
                 'title' => 'You collect',
-                'body' => 'Pick up your robe 1-2 days before convocation, ready to wear.',
+                'body' => 'Pick up your robe at our pickup point, or arrange Kuantan delivery — ready to wear.',
                 'actor' => 'you',
             ],
         ],
@@ -97,13 +97,13 @@ return [
         'title' => 'One simple price',
         'subtitle' => 'No hidden fees. What you see is what you pay.',
         'plan' => 'Robe runner service',
-        'price' => 'RM 35',
+        'price' => 'RM 45',
         'note' => 'per graduate',
         'includes' => [
             'Registration and collection at UMPSA on your behalf',
             'Safe storage until your pickup day',
             'WhatsApp updates at every step',
-            'Flexible pickup 1-2 days before convocation',
+            'Flexible pickup, or cash-on-delivery within Kuantan',
             'Handled by fellow UMPSA students who know the process',
         ],
         'cta' => 'Register now',
@@ -111,16 +111,23 @@ return [
     ],
 
     'pickup' => [
-        'eyebrow' => 'Pickup',
-        'title' => 'Collect from our pickup point',
-        'body' => 'Your robe is stored at one of our team member homes near campus. We share the exact address and a map link on WhatsApp once your payment is confirmed.',
-        'area_label' => 'Area',
-        'area' => 'Pekan, Pahang',
+        'eyebrow' => 'Pickup & delivery',
+        'title' => 'Two ways to get your robe',
+        'body' => 'Collect it yourself from our pickup point in Kuantan, or, if your address is within Kuantan, let us hand-deliver it to you.',
+        'self_badge' => 'Self-pickup',
+        'self_title' => 'Our pickup point',
+        'self_body' => 'Come by during pickup hours below. We will confirm your slot on WhatsApp once your payment is in.',
+        'address_label' => 'Address',
+        'directions' => 'Get directions',
+        'cod_badge' => 'Cash on delivery',
+        'cod_title' => 'Kuantan delivery',
+        'cod_body' => 'Within Kuantan, we can hand-deliver your robe and you pay on the spot. Message us on WhatsApp to arrange a time.',
+        'cod_cta' => 'Arrange delivery',
         'hours_label' => 'Pickup hours',
-        'hours' => '10:00am - 8:00pm, by appointment',
+        'hours' => '9:00am - 5:00pm daily, up to 10:00pm by prior arrangement',
         'window_label' => 'Pickup window',
-        'window' => '1-2 days before convocation',
-        'note' => 'The exact address is shared only after payment, for the security of the robes we hold.',
+        'window' => '23 October - 3 November 2026',
+        'note' => 'Cash-on-delivery is limited to addresses within Kuantan. Outside Kuantan, self-pickup is available to everyone.',
     ],
 
     'faq' => [
@@ -128,7 +135,7 @@ return [
         'title' => 'Questions, answered',
         'items' => [
             [
-                'q' => 'Is JubahRunner affiliated with UMPSA?',
+                'q' => 'Is JubahPanda affiliated with UMPSA?',
                 'a' => 'No. We are an independent team of students and graduates offering a convenience service. All official robe matters remain with the university.',
             ],
             [
@@ -141,7 +148,7 @@ return [
             ],
             [
                 'q' => 'What if I cannot come to the pickup point?',
-                'a' => 'Message us. Depending on your location we may be able to arrange an alternative, though extra charges may apply.',
+                'a' => 'If you are within Kuantan, we offer cash-on-delivery so you do not need to visit the pickup point. Outside Kuantan, self-pickup is currently the only option.',
             ],
             [
                 'q' => 'Is my robe safe with you?',
@@ -170,7 +177,7 @@ return [
         'explore' => 'Explore',
         'contact' => 'Contact',
         'follow' => 'Follow',
-        'disclaimer' => 'JubahRunner is an independent, student-run service. We are not affiliated with, endorsed by, or representing Universiti Malaysia Pahang Al-Sultan Abdullah.',
+        'disclaimer' => 'JubahPanda is an independent, student-run service. We are not affiliated with, endorsed by, or representing Universiti Malaysia Pahang Al-Sultan Abdullah.',
         'rights' => 'All rights reserved.',
     ],
 

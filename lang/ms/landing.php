@@ -3,7 +3,7 @@
 return [
 
     'meta' => [
-        'title' => 'JubahRunner — Runner jubah konvokesyen untuk graduan UMPSA',
+        'title' => 'JubahPanda — Runner jubah konvokesyen untuk graduan UMPSA',
         'description' => 'Tak perlu beratur di UMPSA. Pasukan kami ambil jubah konvokesyen anda, simpan dengan selamat, dan serahkan 1-2 hari sebelum graduasi anda.',
     ],
 
@@ -86,7 +86,7 @@ return [
             ],
             [
                 'title' => 'Anda ambil',
-                'body' => 'Ambil jubah anda 1-2 hari sebelum konvokesyen, sedia untuk dipakai.',
+                'body' => 'Ambil jubah anda di lokasi pengambilan kami, atau atur penghantaran dalam Kuantan — sedia untuk dipakai.',
                 'actor' => 'you',
             ],
         ],
@@ -97,13 +97,13 @@ return [
         'title' => 'Satu harga, mudah',
         'subtitle' => 'Tiada caj tersembunyi. Apa yang anda lihat, itulah yang anda bayar.',
         'plan' => 'Perkhidmatan runner jubah',
-        'price' => 'RM 35',
+        'price' => 'RM 45',
         'note' => 'setiap graduan',
         'includes' => [
             'Pendaftaran dan pengambilan di UMPSA bagi pihak anda',
             'Penyimpanan selamat sehingga hari pengambilan anda',
             'Kemas kini WhatsApp di setiap langkah',
-            'Pengambilan fleksibel 1-2 hari sebelum konvokesyen',
+            'Pengambilan fleksibel, atau bayar semasa terima dalam Kuantan',
             'Diuruskan oleh rakan pelajar UMPSA yang faham prosesnya',
         ],
         'cta' => 'Daftar sekarang',
@@ -111,16 +111,23 @@ return [
     ],
 
     'pickup' => [
-        'eyebrow' => 'Pengambilan',
-        'title' => 'Ambil di lokasi pengambilan kami',
-        'body' => 'Jubah anda disimpan di rumah salah seorang ahli pasukan kami berhampiran kampus. Kami akan kongsikan alamat penuh dan pautan peta melalui WhatsApp sebaik pembayaran anda disahkan.',
-        'area_label' => 'Kawasan',
-        'area' => 'Pekan, Pahang',
+        'eyebrow' => 'Pengambilan & penghantaran',
+        'title' => 'Dua cara untuk dapatkan jubah anda',
+        'body' => 'Ambil sendiri di lokasi pengambilan kami di Kuantan, atau jika alamat anda di dalam Kuantan, biar kami hantar terus kepada anda.',
+        'self_badge' => 'Ambil sendiri',
+        'self_title' => 'Lokasi pengambilan kami',
+        'self_body' => 'Datang pada waktu pengambilan di bawah. Kami akan sahkan slot anda melalui WhatsApp sebaik sahaja bayaran diterima.',
+        'address_label' => 'Alamat',
+        'directions' => 'Dapatkan arah',
+        'cod_badge' => 'Bayar semasa terima',
+        'cod_title' => 'Penghantaran Kuantan',
+        'cod_body' => 'Dalam kawasan Kuantan, kami boleh hantar jubah anda terus dan anda bayar semasa terima. Mesej kami di WhatsApp untuk atur waktu.',
+        'cod_cta' => 'Atur penghantaran',
         'hours_label' => 'Waktu pengambilan',
-        'hours' => '10:00 pagi - 8:00 malam, dengan temu janji',
+        'hours' => '9:00 pagi - 5:00 petang setiap hari, sehingga 10:00 malam dengan perjanjian awal',
         'window_label' => 'Tempoh pengambilan',
-        'window' => '1-2 hari sebelum konvokesyen',
-        'note' => 'Alamat penuh hanya dikongsi selepas pembayaran, demi keselamatan jubah yang kami simpan.',
+        'window' => '23 Oktober - 3 November 2026',
+        'note' => 'Bayar semasa terima hanya untuk alamat dalam Kuantan. Di luar Kuantan, pengambilan sendiri terbuka kepada semua.',
     ],
 
     'faq' => [
@@ -128,7 +135,7 @@ return [
         'title' => 'Soalan anda, dijawab',
         'items' => [
             [
-                'q' => 'Adakah JubahRunner berkaitan dengan UMPSA?',
+                'q' => 'Adakah JubahPanda berkaitan dengan UMPSA?',
                 'a' => 'Tidak. Kami sebuah pasukan bebas terdiri daripada pelajar dan graduan yang menawarkan perkhidmatan kemudahan. Semua urusan rasmi jubah kekal dengan pihak universiti.',
             ],
             [
@@ -141,7 +148,7 @@ return [
             ],
             [
                 'q' => 'Bagaimana jika saya tidak dapat ke lokasi pengambilan?',
-                'a' => 'Hubungi kami. Bergantung pada lokasi anda, kami mungkin boleh aturkan alternatif, namun caj tambahan mungkin dikenakan.',
+                'a' => 'Jika anda berada dalam Kuantan, kami tawarkan bayar semasa terima supaya anda tidak perlu datang ke lokasi pengambilan. Di luar Kuantan, pengambilan sendiri buat masa ini satu-satunya pilihan.',
             ],
             [
                 'q' => 'Adakah jubah saya selamat dengan anda?',
@@ -170,7 +177,7 @@ return [
         'explore' => 'Terokai',
         'contact' => 'Hubungi',
         'follow' => 'Ikuti',
-        'disclaimer' => 'JubahRunner ialah perkhidmatan bebas yang dikendalikan oleh pelajar. Kami tidak berkaitan, tidak disokong, dan tidak mewakili Universiti Malaysia Pahang Al-Sultan Abdullah.',
+        'disclaimer' => 'JubahPanda ialah perkhidmatan bebas yang dikendalikan oleh pelajar. Kami tidak berkaitan, tidak disokong, dan tidak mewakili Universiti Malaysia Pahang Al-Sultan Abdullah.',
         'rights' => 'Hak cipta terpelihara.',
     ],
 

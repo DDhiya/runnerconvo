@@ -1,12 +1,12 @@
-# JubahRunner
+# JubahPanda
 
-Landing page for **JubahRunner**, a convocation robe runner service for graduates of
+Landing page for **JubahPanda**, a convocation robe runner service for graduates of
 Universiti Malaysia Pahang Al-Sultan Abdullah (UMPSA).
 
 Graduates register with us, we collect their robe from the university on their behalf,
 store it safely, and hand it over 1–2 days before convocation.
 
-> JubahRunner is an independent, student-run service. It is not affiliated with,
+> JubahPanda is an independent, student-run service. It is not affiliated with,
 > endorsed by, or representing UMPSA.
 
 ## Status
@@ -57,7 +57,10 @@ resources/views/
 resources/css/app.css        design tokens (@theme) + .glass-card / .btn-* / .eyebrow
 resources/js/app.js          mobile menu, sticky header, scroll reveal
 lang/{en,ms}/landing.php     all copy — no user-facing strings live in Blade
-config/jubahrunner.php       WhatsApp, Instagram, email, register URL
+config/jubahrunner.php       WhatsApp, Instagram, email, register URL (internal
+                              config namespace — kept as-is through the JubahPanda
+                              rebrand so JR_* env vars stay stable)
+public/images/               logo mark, wordmark lockup and generated og-image.png
 app/Http/Middleware/SetLocale.php
 ```
 
@@ -88,20 +91,18 @@ Set these in `.env`:
 | `JR_INSTAGRAM` | Handle without the `@` |
 | `JR_EMAIL` | Contact address |
 | `JR_REGISTER_URL` | Registration form link; falls back to WhatsApp if blank |
+| `JR_ADDRESS` | Pickup point address, shown on the page and used to build the map embed |
+| `JR_MAP_URL` | "Get directions" link (a Google Maps share link) |
 
-And in `lang/{en,ms}/landing.php`:
-
-- `pricing.price` — currently a placeholder **RM 35**
-- `pickup.area`, `pickup.hours`, `pickup.window` — currently Pekan, Pahang / by appointment
+`pricing.price` in `lang/{en,ms}/landing.php` is the flat fee, currently **RM 45**.
+`pickup.hours` and `pickup.window` there are the real pickup dates/hours for the
+current convocation — update them each intake.
 
 Also outstanding:
 
 - **Payment** — step 2 is a placeholder. See the `TODO(payment)` block in
   `resources/views/partials/steps.blade.php` for the options considered
   (ToyyibPay / Billplz for FPX, DuitNow QR, or Stripe).
-- **Share image** — add `public/og-image.png` (1200×630) and uncomment the `og:image`
-  tag in `layouts/app.blade.php`. These links get pasted into WhatsApp groups.
-- **Logo** — the wordmark is currently text only.
 
 ## Next steps
 
