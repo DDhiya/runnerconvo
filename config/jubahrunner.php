@@ -8,15 +8,15 @@
 | Every placeholder the landing page needs lives here, so going live is a
 | matter of filling in .env rather than hunting through Blade templates.
 |
-| TODO before launch: set JR_WHATSAPP_NUMBER, JR_INSTAGRAM, JR_EMAIL and
-| JR_REGISTER_URL in .env. Until JR_REGISTER_URL is set, every "Register"
+| TODO before launch: set JP_WHATSAPP_NUMBER, JP_INSTAGRAM, JP_EMAIL and
+| JP_REGISTER_URL in .env. Until JP_REGISTER_URL is set, every "Register"
 | button falls back to opening a WhatsApp chat.
 |
 */
 
-$whatsapp = env('JR_WHATSAPP_NUMBER', '60123456789');
-$instagram = env('JR_INSTAGRAM', 'jubahpanda');
-$address = env('JR_ADDRESS', 'No. 15, Lorong IM 2/6, Bandar Indera Mahkota, 25200 Kuantan, Pahang');
+$whatsapp = env('JP_WHATSAPP_NUMBER', '60123456789');
+$instagram = env('JP_INSTAGRAM', 'jubahpanda');
+$address = env('JP_ADDRESS', 'No. 15, Lorong IM 2/6, Bandar Indera Mahkota, 25200 Kuantan, Pahang');
 
 return [
 
@@ -27,16 +27,16 @@ return [
     'instagram' => $instagram,
     'instagram_url' => 'https://instagram.com/'.$instagram,
 
-    'email' => env('JR_EMAIL', 'hello@jubahpanda.my'),
+    'email' => env('JP_EMAIL', 'hello@jubahpanda.my'),
 
     // Point this at your registration form (Google Form for now, a real
     // Laravel form later). Falls back to WhatsApp so no CTA is ever dead.
-    'register_url' => env('JR_REGISTER_URL') ?: 'https://wa.me/'.$whatsapp,
+    'register_url' => env('JP_REGISTER_URL') ?: 'https://wa.me/'.$whatsapp,
 
     // Pickup point. The embed URL needs no API key — Google serves a basic
     // "for development purposes" pin from a plain ?q= query.
     'address' => $address,
-    'map_url' => env('JR_MAP_URL', 'https://maps.app.goo.gl/aewJWH1vxBm4xGkz8'),
+    'map_url' => env('JP_MAP_URL', 'https://maps.app.goo.gl/aewJWH1vxBm4xGkz8'),
     'map_embed_url' => 'https://www.google.com/maps?q='.rawurlencode($address).'&output=embed',
 
 ];

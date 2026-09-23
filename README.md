@@ -13,7 +13,7 @@ store it safely, and hand it over 1–2 days before convocation.
 
 This is the **landing page skeleton**. It is a static marketing page — there is no
 database-backed registration form, no payment gateway, and no admin panel yet.
-Every "Register" button points at `JR_REGISTER_URL` (a Google Form or WhatsApp for now).
+Every "Register" button points at `JP_REGISTER_URL` (a Google Form or WhatsApp for now).
 
 ## Stack
 
@@ -30,7 +30,7 @@ Every "Register" button points at `JR_REGISTER_URL` (a Google Form or WhatsApp f
 ```bash
 composer install
 npm install
-cp .env.example .env      # then fill in the JR_* values
+cp .env.example .env      # then fill in the JP_* values
 php artisan key:generate
 ```
 
@@ -57,9 +57,10 @@ resources/views/
 resources/css/app.css        design tokens (@theme) + .glass-card / .btn-* / .eyebrow
 resources/js/app.js          mobile menu, sticky header, scroll reveal
 lang/{en,ms}/landing.php     all copy — no user-facing strings live in Blade
-config/jubahrunner.php       WhatsApp, Instagram, email, register URL (internal
-                              config namespace — kept as-is through the JubahPanda
-                              rebrand so JR_* env vars stay stable)
+config/jubahrunner.php       WhatsApp, Instagram, email, address, register URL
+                              (filename kept through the JubahPanda rebrand, same
+                              as the repo, VPS path and system user — all still
+                              `runnerconvo`. The env vars it reads are `JP_*`.)
 public/images/               logo mark, wordmark lockup and generated og-image.png
 app/Http/Middleware/SetLocale.php
 ```
@@ -87,12 +88,12 @@ Set these in `.env`:
 
 | Variable | What it is |
 |---|---|
-| `JR_WHATSAPP_NUMBER` | Digits only, international format, no `+` (e.g. `60123456789`) |
-| `JR_INSTAGRAM` | Handle without the `@` |
-| `JR_EMAIL` | Contact address |
-| `JR_REGISTER_URL` | Registration form link; falls back to WhatsApp if blank |
-| `JR_ADDRESS` | Pickup point address, shown on the page and used to build the map embed |
-| `JR_MAP_URL` | "Get directions" link (a Google Maps share link) |
+| `JP_WHATSAPP_NUMBER` | Digits only, international format, no `+` (e.g. `60123456789`) |
+| `JP_INSTAGRAM` | Handle without the `@` |
+| `JP_EMAIL` | Contact address |
+| `JP_REGISTER_URL` | Registration form link; falls back to WhatsApp if blank |
+| `JP_ADDRESS` | Pickup point address, shown on the page and used to build the map embed |
+| `JP_MAP_URL` | "Get directions" link (a Google Maps share link) |
 
 `pricing.price` in `lang/{en,ms}/landing.php` is the flat fee, currently **RM 45**.
 `pickup.hours` and `pickup.window` there are the real pickup dates/hours for the

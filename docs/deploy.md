@@ -74,10 +74,10 @@ later. The hostname therefore appears in exactly **two** places, both outside ap
 2. `APP_URL` in `/opt/runnerconvo/runnerconvo/.env` — VPS only, never in git.
 
 No Blade template or translation string contains it. `config/jubahrunner.php` holds contact details
-(WhatsApp, Instagram, registration form, email) but no site hostname — its one domain-shaped value
-is the `hello@jubahrunner.my` fallback for `JR_EMAIL`, a contact address, not the URL the app serves
-itself on. Every value there is `env()`-overridable from `.env`. See "Switching to the real domain"
-at the bottom.
+(WhatsApp, Instagram, registration form, email, pickup address) but no site hostname — its one
+domain-shaped value is the `hello@jubahpanda.my` fallback for `JP_EMAIL`, a contact address, not the
+URL the app serves itself on. Every value there is `env()`-overridable from `.env`. See "Switching
+to the real domain" at the bottom.
 
 ### `.env` location — a deliberate deviation
 
@@ -153,7 +153,7 @@ sudo -u runnerconvo composer install --no-dev --optimize-autoloader --no-interac
 # .env — piped, never echoed, so APP_KEY never lands in shell history. Generated fresh
 # on the box; never reuse the local dev APP_KEY.
 sudo -u runnerconvo tee /opt/runnerconvo/runnerconvo/.env >/dev/null <<'EOF'
-APP_NAME=JubahRunner
+APP_NAME=JubahPanda
 APP_ENV=production
 APP_KEY=
 APP_DEBUG=false
@@ -172,11 +172,15 @@ SESSION_SECURE_COOKIE=true
 CACHE_STORE=file
 QUEUE_CONNECTION=sync
 
-# TODO before launch — see README.md
-JR_WHATSAPP_NUMBER=
-JR_INSTAGRAM=
-JR_EMAIL=
-JR_REGISTER_URL=
+# Contact + pickup details — see README.md. Renamed from JR_* to JP_* on
+# 2026-09-23; config/jubahrunner.php reads the JP_ names only, so an .env
+# still carrying JR_ names silently falls back to the config defaults.
+JP_WHATSAPP_NUMBER=
+JP_INSTAGRAM=
+JP_EMAIL=
+JP_REGISTER_URL=
+JP_ADDRESS=
+JP_MAP_URL=
 EOF
 chmod 600 /opt/runnerconvo/runnerconvo/.env
 sudo -u runnerconvo php artisan key:generate --force

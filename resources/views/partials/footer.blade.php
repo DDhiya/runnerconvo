@@ -35,7 +35,7 @@
 
             <div>
                 <h2 class="text-xs font-bold tracking-wide text-ink uppercase">{{ __('landing.footer.contact') }}</h2>
-                {{-- TODO: real WhatsApp number, Instagram handle and email live in .env (JR_*). --}}
+                {{-- TODO: real Instagram handle and email live in .env (JP_*). --}}
                 <ul class="mt-4 space-y-2.5 text-sm text-ink-soft">
                     <li>
                         <a href="{{ config('jubahrunner.whatsapp_url') }}" target="_blank" rel="noopener noreferrer"
