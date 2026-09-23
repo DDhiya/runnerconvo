@@ -11,6 +11,11 @@ over.
 
 First deployed 2026-09-08. Cert expires 2026-12-07; `certbot.timer` is active and renews it.
 
+**`jubahpanda.my` is half-wired as of 2026-09-23** — the zone is on Cloudflare and proxying to this
+box, and the `:80` vhost aliases it, so the origin serves the right app over HTTP. The TLS half is
+not done: the cert still covers `convo.dhiyadanial.my` only, and the `:443` vhost has no alias. See
+"Finishing jubahpanda.my" at the bottom for the two commands that close it out.
+
 ## SSH access (read this before anything else)
 
 `~/.ssh/config` has the `Host 160.30.5.87` entry (`Port 8080`, `User root`, `IdentityFile` set) —
@@ -67,10 +72,10 @@ never shared with any of them.
 
 ### The hostname is deliberately not hardcoded
 
-`convo.dhiyadanial.my` is temporary; the team moves to a root domain (probably `jubahrunner.my`)
-later. The hostname therefore appears in exactly **two** places, both outside application code:
+`convo.dhiyadanial.my` is temporary; the team is moving to `jubahpanda.my`. The hostname therefore
+appears in exactly **two** places, both outside application code:
 
-1. `ServerName` in `deploy/runnerconvo.conf` — the only occurrence in this repo.
+1. `ServerName`/`ServerAlias` in `deploy/runnerconvo.conf` — the only occurrence in this repo.
 2. `APP_URL` in `/opt/runnerconvo/runnerconvo/.env` — VPS only, never in git.
 
 No Blade template or translation string contains it. `config/jubahrunner.php` holds contact details
@@ -309,32 +314,62 @@ curl -sI https://finance.dhiyadanial.my/ | head -1
 curl -sI https://fitness.dhiyadanial.my/ | head -1
 ```
 
-## Switching to the real domain (jubahrunner.my)
+## Finishing jubahpanda.my
 
-`jubahrunner.my` does not resolve yet. When it does, the whole switch is:
+The real domain is **jubahpanda.my** (not `jubahrunner.my`, which this file used to guess at and
+was never registered). Registered at Namecheap, zone on Cloudflare — `jermaine`/`kimora.ns`, the
+same pair every other site here uses — and already proxying apex + `www` to this box.
+
+**Step 1 is done** (2026-09-23): the `:80` vhost carries
+`ServerAlias jubahpanda.my www.jubahpanda.my`.
+
+That alias is not cosmetic. Apache's default vhost on this box is `admin.dhiyadanial.my` (it sorts
+first in `sites-enabled`), so before the alias existed `jubahpanda.my` was being served **the admin
+app**, not this one. Any new hostname pointed at this IP does the same until something claims it —
+check with `apache2ctl -S`, whose first `default server` line names the catch-all.
+
+The two commands left, in this order — the alias on `:443` must come *after* the cert, or
+Cloudflare Full (strict) sees a cert that does not cover the hostname and serves a 526:
 
 ```bash
-# 1. Point the domain at Cloudflare, add an A record for 160.30.5.87 (proxied, same as
-#    every other site on this box). Confirm before touching the VPS:
-dig +short A jubahrunner.my
+# 1. Expand the existing cert lineage to cover all three names. --expand replaces the
+#    lineage only on success, so a failure leaves the working convo cert untouched.
+#    Dry-run first; it costs nothing and proves HTTP-01 survives the Cloudflare proxy:
+ssh 160.30.5.87 "certbot certonly --apache --cert-name convo.dhiyadanial.my \
+  -d convo.dhiyadanial.my -d jubahpanda.my -d www.jubahpanda.my \
+  --expand --non-interactive --agree-tos --dry-run"     # then drop --dry-run
 
-# 2. One-line ServerName change in the installed vhost AND its -le-ssl twin.
-ssh 160.30.5.87 "sed -i 's/convo\.dhiyadanial\.my/jubahrunner.my/' \
-  /etc/apache2/sites-available/runnerconvo.conf \
-  /etc/apache2/sites-available/runnerconvo-le-ssl.conf && apache2ctl configtest"
+# 2. Alias the :443 vhost. No SSLCertificateFile edit: the lineage name is unchanged,
+#    so /etc/letsencrypt/live/convo.dhiyadanial.my/ now simply covers three names.
+ssh 160.30.5.87 "sed -i '/ServerName convo.dhiyadanial.my/a\\    ServerAlias jubahpanda.my www.jubahpanda.my' \
+  /etc/apache2/sites-available/runnerconvo-le-ssl.conf \
+  && apache2ctl configtest && systemctl reload apache2"
+```
 
-# 3. New cert covering both apex and www.
-ssh 160.30.5.87 "certbot --apache -d jubahrunner.my -d www.jubahrunner.my"
+Verify from off-box, and note that a plain `curl` only proves Cloudflare answered — check the
+origin too:
 
-# 4. APP_URL, then re-cache.
+```bash
+curl -sI https://jubahpanda.my/ | head -1                      # 200, not 526
+curl -s https://jubahpanda.my/ | grep -o '<html lang="[^"]*"'
+ssh 160.30.5.87 "curl -s -o /dev/null -w '%{http_code}\n' -H 'Host: jubahpanda.my' http://127.0.0.1/"
+```
+
+Then, when you want jubahpanda.my to be the canonical name rather than an alias, swap `ServerName`
+and the alias in both vhosts, point `APP_URL` at it and re-cache:
+
+```bash
 ssh 160.30.5.87 "cd /opt/runnerconvo/runnerconvo \
-  && sudo -u runnerconvo sed -i 's|^APP_URL=.*|APP_URL=https://jubahrunner.my|' .env \
+  && sudo -u runnerconvo sed -i 's|^APP_URL=.*|APP_URL=https://jubahpanda.my|' .env \
   && sudo -u runnerconvo php artisan config:cache"
 ```
 
-Also update `ServerName` in this repo's `deploy/runnerconvo.conf` so the committed copy matches
-reality. **No application code changes** — that is the entire point of keeping the hostname out of
-the codebase.
+`APP_URL` is less load-bearing than it looks — canonical/`og:url` come from the request host, so
+both names already self-describe correctly. It matters for URLs generated off-request (CLI, mail).
+
+Also update `ServerName`/`ServerAlias` in this repo's `deploy/runnerconvo.conf` so the committed
+copy matches reality. **No application code changes** — that is the entire point of keeping the
+hostname out of the codebase.
 
 Keep `convo.dhiyadanial.my` resolving and its cert alive for a while after the switch; anything
 already shared in a WhatsApp group still points there.
