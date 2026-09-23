@@ -6,7 +6,7 @@ Universiti Malaysia Pahang Al-Sultan Abdullah (UMPSA).
 Graduates register with us, we collect their robe from the university on their behalf,
 store it safely, and hand it over 1–2 days before convocation.
 
-> JubahPanda is an independent, student-run service. It is not affiliated with,
+> JubahPanda is an independent service. It is not affiliated with,
 > endorsed by, or representing UMPSA.
 
 ## Status

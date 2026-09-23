@@ -104,7 +104,7 @@ return [
             'Penyimpanan selamat sehingga hari pengambilan anda',
             'Kemas kini WhatsApp di setiap langkah',
             'Pengambilan fleksibel, atau bayar semasa terima dalam Kuantan',
-            'Diuruskan oleh rakan pelajar UMPSA yang faham prosesnya',
+            'Diuruskan oleh pasukan yang mahir dengan proses UMPSA',
         ],
         'cta' => 'Daftar sekarang',
         'footnote' => 'Harga muktamad akan disahkan sebelum pembayaran.',
@@ -177,7 +177,7 @@ return [
         'explore' => 'Terokai',
         'contact' => 'Hubungi',
         'follow' => 'Ikuti',
-        'disclaimer' => 'JubahPanda ialah perkhidmatan bebas yang dikendalikan oleh pelajar. Kami tidak berkaitan, tidak disokong, dan tidak mewakili Universiti Malaysia Pahang Al-Sultan Abdullah.',
+        'disclaimer' => 'JubahPanda ialah perkhidmatan bebas. Kami tidak berkaitan, tidak disokong, dan tidak mewakili Universiti Malaysia Pahang Al-Sultan Abdullah.',
         'rights' => 'Hak cipta terpelihara.',
     ],
 

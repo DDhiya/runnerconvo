@@ -104,7 +104,7 @@ return [
             'Safe storage until your pickup day',
             'WhatsApp updates at every step',
             'Flexible pickup, or cash-on-delivery within Kuantan',
-            'Handled by fellow UMPSA students who know the process',
+            'Handled by a team who knows the UMPSA process inside out',
         ],
         'cta' => 'Register now',
         'footnote' => 'Final price confirmed before payment.',
@@ -177,7 +177,7 @@ return [
         'explore' => 'Explore',
         'contact' => 'Contact',
         'follow' => 'Follow',
-        'disclaimer' => 'JubahPanda is an independent, student-run service. We are not affiliated with, endorsed by, or representing Universiti Malaysia Pahang Al-Sultan Abdullah.',
+        'disclaimer' => 'JubahPanda is an independent service. We are not affiliated with, endorsed by, or representing Universiti Malaysia Pahang Al-Sultan Abdullah.',
         'rights' => 'All rights reserved.',
     ],
 
