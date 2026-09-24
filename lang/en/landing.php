@@ -11,6 +11,7 @@ return [
         'how' => 'How it works',
         'pricing' => 'Pricing',
         'pickup' => 'Pickup',
+        'runners' => 'Runners',
         'faq' => 'FAQ',
         'cta' => 'Register',
         'menu' => 'Open menu',
@@ -128,6 +129,14 @@ return [
         'window_label' => 'Pickup window',
         'window' => '23 October - 3 November 2026',
         'note' => 'Cash-on-delivery is limited to addresses within Kuantan. Outside Kuantan, self-pickup is available to everyone.',
+    ],
+
+    'runners' => [
+        'eyebrow' => 'Our runners',
+        'title' => 'The people handling your robe',
+        'subtitle' => 'Message any of us directly on WhatsApp. Whoever replies first will take care of you.',
+        'chat' => 'Chat on WhatsApp',
+        'chat_with' => 'Chat with :name on WhatsApp',
     ],
 
     'faq' => [

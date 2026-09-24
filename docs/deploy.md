@@ -94,11 +94,27 @@ loads it via `EnvironmentFile`. **Laravel reads `.env` from its own base path**,
 has never been committed — verified), so `git pull` never touches it, and `public/` is the docroot
 so the file is not web-reachable. Still `chmod 600`, owned by `runnerconvo`.
 
-### No database
+### A small SQLite database
 
-The landing page reads and writes nothing. Sessions (used only by the BM/EN language toggle) and
-cache go to files; queues run `sync`. **Do not provision MySQL for this.** MySQL 8.0.46 is already
-running on the box for when the registration form lands — that is a future deploy, not this one.
+As of 2026-09-24 the app has one table: `runners` (the eight-person team directory shown on the
+landing page and edited at `/admin`), plus Laravel's stock `users` table for the admin login. That's
+it — no other feature touches a database. SQLite was chosen over the MySQL already running on the
+box (see below) because there is no user/grant/backup plumbing to stand up for ~8-10 rows and no
+second daemon to babysit; the whole database is one file.
+
+The file lives at `/opt/runnerconvo/runnerconvo/database/database.sqlite` — **inside** the checkout
+(same reasoning as `.env`'s location above: Laravel resolves the path relative to its own base path,
+not a systemd `EnvironmentFile`), gitignored, and outside `public/` so it is never web-reachable.
+Sessions (BM/EN toggle) and cache still go to files and queues still run `sync` — see "Sessions,
+cache and queue stay file-backed" below for why that does not change just because a database exists
+now.
+
+**This file is the only non-reproducible state on this box.** `git clone` no longer fully
+reconstitutes the app on its own — see "Backing up the database" below.
+
+**Do not provision MySQL for this.** MySQL 8.0.46 is already running on the box for when the
+registration form lands — that is a future deploy, not this one, and still has nothing to do with
+the runner directory.
 
 ## Prerequisites on the box (none of this exists yet)
 
@@ -106,8 +122,10 @@ running on the box for when the registration form lands — that is a future dep
 # PHP 8.4 — see "PHP 8.4 is required" above for why 8.3 is not an option.
 add-apt-repository -y ppa:ondrej/php && apt update
 apt install -y php8.4-fpm php8.4-cli php8.4-mbstring php8.4-xml php8.4-curl \
-               php8.4-zip php8.4-intl php8.4-bcmath
-# php8.4-mysql is NOT needed yet — add it when the registration form lands.
+               php8.4-zip php8.4-intl php8.4-bcmath php8.4-sqlite3
+# php8.4-mysql is still NOT needed — the runner directory and admin login use SQLite
+# (php8.4-sqlite3 above), and the registration form (whenever it lands) is a separate
+# future deploy.
 
 # Composer — Ubuntu's package, not the getcomposer.org installer. 2.7.1 is older than
 # local (2.10.2) but only ever runs `install` from a committed lock file here, so the
@@ -172,7 +190,16 @@ APP_FALLBACK_LOCALE=en
 LOG_CHANNEL=stack
 LOG_LEVEL=warning
 
-# No database. Sessions back the BM/EN toggle only.
+# SQLite holds the `runners` table and the admin login — see "A small SQLite
+# database" above. Absolute path on purpose: it removes any question about what
+# php-fpm's CWD is, even though SQLiteConnector would also resolve a relative one.
+DB_CONNECTION=sqlite
+DB_DATABASE=/opt/runnerconvo/runnerconvo/database/database.sqlite
+
+# These stay file/file/sync even though a database now exists — sessions churn on
+# every request, and there is no reason to put that write load on the SQLite file
+# for a login used by eight people. See "Sessions, cache and queue stay
+# file-backed" below.
 SESSION_DRIVER=file
 SESSION_LIFETIME=120
 SESSION_SECURE_COOKIE=true
@@ -192,12 +219,37 @@ EOF
 chmod 600 /opt/runnerconvo/runnerconvo/.env
 sudo -u runnerconvo php artisan key:generate --force
 
-# Writable runtime dirs (the only two Laravel needs).
+# Writable runtime dirs. Three now, not two — SQLiteConnector THROWS if the
+# database file does not exist rather than creating it, so it must be touched
+# before the first `migrate`.
+sudo -u runnerconvo touch /opt/runnerconvo/runnerconvo/database/database.sqlite
 chown -R runnerconvo:runnerconvo /opt/runnerconvo/runnerconvo/storage \
-                                 /opt/runnerconvo/runnerconvo/bootstrap/cache
+                                 /opt/runnerconvo/runnerconvo/bootstrap/cache \
+                                 /opt/runnerconvo/runnerconvo/database
 chmod -R 775 /opt/runnerconvo/runnerconvo/storage \
              /opt/runnerconvo/runnerconvo/bootstrap/cache
+# 750 on database/, not 775: php-fpm (runnerconvo) needs to create the -wal/-shm
+# siblings, but www-data only needs to traverse past it to reach public/, never
+# read inside it.
+chmod 750 /opt/runnerconvo/runnerconvo/database
+chmod 600 /opt/runnerconvo/runnerconvo/database/database.sqlite
+
+sudo -u runnerconvo php artisan migrate --force
+sudo -u runnerconvo php artisan db:seed --class=RunnerSeeder --force
 ```
+
+Then create the admin login — this needs a TTY for the password prompt, so `ssh -t`, not the plain
+`ssh` used elsewhere in this file:
+
+```bash
+ssh -t 160.30.5.87 "cd /opt/runnerconvo/runnerconvo \
+  && sudo -u runnerconvo php artisan jubahpanda:admin you@example.com --name='Your Name'"
+```
+
+There is no `ADMIN_PASSWORD` env var and no admin-seeding step in the `.env` heredoc above, on
+purpose: `config:cache` (run right after this, below) makes Laravel skip `.env` entirely, so an
+env-driven password would read as `null` in production. `jubahpanda:admin` prompts instead, and
+doubles as the password-reset path later.
 
 Then, **from your local machine** — `public/build/` is gitignored, so it is never in the clone:
 
@@ -267,8 +319,16 @@ templates and FPM picks them up per request. **Editing copy in `lang/{en,ms}/lan
 needs `config:cache`/`view:cache`** to take effect, because translations are compiled into the view
 cache.
 
+A deploy that includes a new file under `database/migrations/` is not "the standard deploy" — see
+the **New migration** bullet below. Run `migrate --force` between `config:cache` and `route:cache`.
+
 ## When that is not enough
 
+- **New migration** (a new file under `database/migrations/`):
+  `sudo -u runnerconvo php artisan migrate --force` — run it **after** `config:cache` (so the command
+  sees the current `DB_DATABASE`) and **before** `route:cache`/`view:cache`. `--force` is required
+  because `APP_ENV=production` makes `migrate` prompt for confirmation otherwise. Never run
+  `migrate:fresh` or `migrate:refresh` here — see "Do not" below.
 - **New Composer dependency** (`composer.lock` changed):
   `sudo -u runnerconvo composer install --no-dev --optimize-autoloader` before the cache commands,
   then `systemctl reload php8.4-fpm` to clear opcache.
@@ -294,7 +354,16 @@ ssh 160.30.5.87 "ls -l /run/php/php8.4-fpm-runnerconvo.sock"   # srw-rw---- www-
 curl -sI https://jubahpanda.my/                                 # 200, after certbot
 curl -s  https://jubahpanda.my/ | grep -o '<html lang="[^"]*"'   # lang="en" (default; see SetLocale)
 curl -s  https://jubahpanda.my/lang/ms -o /dev/null -w '%{http_code}\n'  # 302
+
+# Runner directory + admin (after the SQLite deploy below).
+curl -s  https://jubahpanda.my/ | grep -c 'wa.me/60'                     # >= 8
+curl -s  https://jubahpanda.my/ | grep -o 'id="runners"'                 # present
+curl -sI https://jubahpanda.my/database/database.sqlite | head -1        # 404 — docroot is public/
+curl -sI https://jubahpanda.my/admin | head -1                           # 302 to /admin/login, NOT 401
 ```
+
+A bare `401` on that last check means the `redirectGuestsTo`/`redirectUsersTo` configuration in
+`bootstrap/app.php`'s `withMiddleware()` callback did not take effect — check that first.
 
 Also check `www.jubahpanda.my` and `convo.dhiyadanial.my` the same way — all three are aliases on
 one vhost and cert, so a break in the vhost config affects all three at once even though only one
@@ -309,6 +378,8 @@ Then check in a real browser, not just curl:
   DocumentRoot is wrong — it must point at `public/`, not the repo root.
 - `APP_DEBUG=false` is doing its job: a deliberate 404 shows Laravel's plain error page, not a
   stack trace.
+- Log in at `/admin`, rename a runner, and confirm the landing page shows the new name immediately —
+  there is no caching layer between the `runners` table and the page, by design.
 
 Confirm the four existing services are completely unaffected — this deploy touches Apache's global
 config (`a2enmod proxy_fcgi`) and adds a PPA, which are the only two things here with any blast
@@ -319,6 +390,94 @@ ssh 160.30.5.87 "systemctl status myfinance-api myfinance-web myfitness-web dhiy
 curl -sI https://finance.dhiyadanial.my/ | head -1
 curl -sI https://fitness.dhiyadanial.my/ | head -1
 ```
+
+## Adding the runner database and admin (2026-09-24)
+
+The box was already live with no database (see "A small SQLite database" above for the end state).
+This is the one-time deploy that got it there, done in **two passes** rather than one — the read
+path (SQLite + the public "Our runners" section) proven working before the write path (the `/admin`
+login) went anywhere near a public-facing box:
+
+**Pass 1 — read path:**
+
+```bash
+# 1. SQLite PDO driver.
+ssh 160.30.5.87 "apt install -y php8.4-sqlite3 && systemctl restart php8.4-fpm"
+ssh 160.30.5.87 "php8.4 -m | grep -iE 'pdo_sqlite|sqlite3'"          # both must print
+
+# 2. Create the file, set ownership/permissions — see "Writable runtime dirs" above
+#    for why (SQLiteConnector throws rather than creating it).
+ssh 160.30.5.87 "cd /opt/runnerconvo/runnerconvo \
+  && sudo -u runnerconvo touch database/database.sqlite \
+  && chmod 750 database && chmod 600 database/database.sqlite"
+
+# 3. Add DB_CONNECTION/DB_DATABASE to .env by hand — see the heredoc above.
+
+# 4. Pull, re-cache config FIRST so migrate sees the new DB config, then migrate + seed.
+ssh 160.30.5.87 "cd /opt/runnerconvo/runnerconvo \
+  && sudo -u runnerconvo git pull \
+  && sudo -u runnerconvo php artisan config:cache \
+  && sudo -u runnerconvo php artisan migrate --force \
+  && sudo -u runnerconvo php artisan db:seed --class=RunnerSeeder --force"
+
+# 5. Assets — LOCAL machine, same npm run build + scp block as the bootstrap above.
+#    The new section's Tailwind classes (lg:grid-cols-4, h-14 w-14, …) are not in
+#    the previously-synced public/build/.
+
+# 6. Remaining caches.
+ssh 160.30.5.87 "cd /opt/runnerconvo/runnerconvo \
+  && sudo -u runnerconvo php artisan route:cache && sudo -u runnerconvo php artisan view:cache"
+```
+
+Verify pass 1 with the runner-directory curl checks in "Sanity-check after deploying" above before
+touching pass 2.
+
+**Pass 2 — write path (the admin):** ordinary `git pull` + cache-rebuild (`## The standard deploy`)
+covers the new routes and views. A fresh `npm run build` + `scp` is needed again — the admin views
+pull in a different set of Tailwind utilities (tables, form inputs) than pass 1's public section.
+Then create the admin account:
+
+```bash
+ssh -t 160.30.5.87 "cd /opt/runnerconvo/runnerconvo \
+  && sudo -u runnerconvo php artisan jubahpanda:admin you@example.com --name='Your Name'"
+```
+
+### Sessions, cache and queue stay file-backed
+
+Explicitly **do not** switch `SESSION_DRIVER` to `database` just because a database now exists. The
+`web` guard's session payload stores only a user id — the storage backend is irrelevant to whether
+login works — and `storage/framework/sessions` is already writable and already exercised by the
+BM/EN toggle. Moving sessions onto SQLite would put per-request write load on a file that otherwise
+sees only the occasional admin edit, for zero benefit to a login used by one team of eight.
+
+### FPM's `disable_functions` is irrelevant here
+
+`deploy/runnerconvo-fpm.conf` blocks `exec,passthru,shell_exec,system,proc_open,popen`. None of this
+affects SQLite: PDO SQLite is a native extension, not a shell-out, and every `php artisan` command
+above runs under the CLI SAPI (`/etc/php/8.4/cli/php.ini`), which that pool config does not touch. It
+does matter for the backup method below — hence backing up from a root shell, not from PHP.
+
+## Backing up the database
+
+`database/database.sqlite` is the only state on this box that `git pull` cannot reconstitute (see "A
+small SQLite database" above). Losing it costs a re-run of `RunnerSeeder` (in git) plus
+`jubahpanda:admin` — small today, but the blast radius grows the moment the registration form lands
+and starts writing bookings here.
+
+```bash
+# One-time: the sqlite3 CLI is not installed by the app (only the PDO extension is).
+ssh 160.30.5.87 "apt install -y sqlite3"
+
+# .backup is atomic even if a write is in progress — a plain `cp` can copy a torn
+# file mid-write and is not safe here.
+ssh 160.30.5.87 "sudo -u runnerconvo sqlite3 /opt/runnerconvo/runnerconvo/database/database.sqlite \
+  \".backup /tmp/jubahpanda-\$(date +%F).sqlite\""
+scp 160.30.5.87:/tmp/jubahpanda-*.sqlite ./backups/
+ssh 160.30.5.87 "rm /tmp/jubahpanda-*.sqlite"   # don't leave copies lying around in /tmp
+```
+
+There is no schedule for this yet — run it by hand before anything risky (a migration, a bulk edit),
+and set up a cron job once the registration form makes the data worth losing sleep over.
 
 ## Domain history: convo.dhiyadanial.my → jubahpanda.my
 
@@ -427,3 +586,10 @@ WhatsApp group still points there, and it costs nothing to keep answering on the
 - **Do not upgrade the box's Node** to make the build work on the VPS. Other apps depend on v18.
   Build locally and `scp`.
 - **Do not install `php8.3-*`.** See the top of this file.
+- **Do not commit `database/database.sqlite`.** Gitignored at both the root (`*.sqlite`) and
+  `database/.gitignore` (`*.sqlite*`) — belt and braces on purpose.
+- **Do not run `migrate:fresh` or `migrate:refresh` in production.** Both drop the `runners` table
+  and the admin `users` row along with it.
+- **Do not run `db:seed` without `--class=`.** The bare `DatabaseSeeder` used to create a
+  `test@example.com` user with a known factory password; it no longer does (see `DatabaseSeeder`),
+  but always name the seeder explicitly on a production box regardless.

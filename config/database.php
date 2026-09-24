@@ -38,8 +38,10 @@ return [
             'database' => env('DB_DATABASE', database_path('database.sqlite')),
             'prefix' => '',
             'foreign_key_constraints' => env('DB_FOREIGN_KEYS', true),
-            'busy_timeout' => null,
-            'journal_mode' => null,
+            // WAL + a busy timeout are cheap insurance against "database is locked"
+            // once the admin can write concurrently with a page render.
+            'busy_timeout' => 5000,
+            'journal_mode' => 'WAL',
             'synchronous' => null,
             'transaction_mode' => 'DEFERRED',
         ],

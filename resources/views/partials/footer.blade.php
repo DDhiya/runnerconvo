@@ -3,6 +3,7 @@
         '#how' => __('landing.nav.how'),
         '#pricing' => __('landing.nav.pricing'),
         '#pickup' => __('landing.nav.pickup'),
+        '#runners' => __('landing.nav.runners'),
         '#faq' => __('landing.nav.faq'),
     ];
 @endphp

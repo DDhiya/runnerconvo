@@ -11,6 +11,7 @@ return [
         'how' => 'Cara ia berfungsi',
         'pricing' => 'Harga',
         'pickup' => 'Pengambilan',
+        'runners' => 'Runner',
         'faq' => 'Soalan lazim',
         'cta' => 'Daftar',
         'menu' => 'Buka menu',
@@ -128,6 +129,14 @@ return [
         'window_label' => 'Tempoh pengambilan',
         'window' => '23 Oktober - 3 November 2026',
         'note' => 'Bayar semasa terima hanya untuk alamat dalam Kuantan. Di luar Kuantan, pengambilan sendiri terbuka kepada semua.',
+    ],
+
+    'runners' => [
+        'eyebrow' => 'Runner kami',
+        'title' => 'Orang yang uruskan jubah anda',
+        'subtitle' => 'Mesej sesiapa sahaja antara kami terus di WhatsApp. Siapa yang balas dahulu akan uruskan anda.',
+        'chat' => 'Chat di WhatsApp',
+        'chat_with' => 'Chat dengan :name di WhatsApp',
     ],
 
     'faq' => [

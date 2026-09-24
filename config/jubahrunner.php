@@ -20,7 +20,10 @@ $address = env('JP_ADDRESS', 'No. 15, Lorong IM 2/6, Bandar Indera Mahkota, 2520
 
 return [
 
-    // Digits only, international format, no "+" — e.g. 60123456789.
+    // The main business line. Per-runner numbers live in the `runners` table and
+    // are managed at /admin — this value is deliberately independent of that
+    // table so every CTA on the page keeps working even if the database is
+    // unavailable. Digits only, international format, no "+" — e.g. 60123456789.
     'whatsapp_number' => $whatsapp,
     'whatsapp_url' => 'https://wa.me/'.$whatsapp,
 

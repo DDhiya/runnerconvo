@@ -6,6 +6,7 @@
     @include('partials.steps')
     @include('partials.pricing')
     @include('partials.pickup')
+    @include('partials.runners', ['runners' => $runners])
     @include('partials.faq')
     @include('partials.cta')
 @endsection
