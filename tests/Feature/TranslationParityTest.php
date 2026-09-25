@@ -5,20 +5,31 @@ namespace Tests\Feature;
 use Tests\TestCase;
 
 /**
- * Enforces the invariant the README's drift-check snippet checks by hand:
- * lang/en/landing.php and lang/ms/landing.php must have identical key structures.
+ * Enforces the invariant the README's drift-check snippet checks by hand: every
+ * lang/en/*.php file has a key-identical lang/ms twin. Iterates from en, so the
+ * deliberately partial, ms-only lang/ms/validation.php is naturally excluded.
  */
 class TranslationParityTest extends TestCase
 {
-    public function test_english_and_malay_landing_copy_have_the_same_keys(): void
+    public function test_every_english_lang_file_has_a_key_identical_malay_twin(): void
     {
-        $en = $this->flatten(require lang_path('en/landing.php'));
-        $ms = $this->flatten(require lang_path('ms/landing.php'));
+        $files = glob(lang_path('en/*.php'));
+        $this->assertNotEmpty($files);
 
-        sort($en);
-        sort($ms);
+        foreach ($files as $file) {
+            $name = basename($file);
+            $twin = lang_path('ms/'.$name);
 
-        $this->assertSame($en, $ms, 'lang/en/landing.php and lang/ms/landing.php keys have drifted.');
+            $this->assertFileExists($twin, "lang/ms/{$name} is missing.");
+
+            $en = $this->flatten(require $file);
+            $ms = $this->flatten(require $twin);
+
+            sort($en);
+            sort($ms);
+
+            $this->assertSame($en, $ms, "lang/en/{$name} and lang/ms/{$name} keys have drifted.");
+        }
     }
 
     /**

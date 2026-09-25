@@ -1,10 +1,10 @@
 @php
     $links = [
-        '#how' => __('landing.nav.how'),
-        '#pricing' => __('landing.nav.pricing'),
-        '#pickup' => __('landing.nav.pickup'),
-        '#runners' => __('landing.nav.runners'),
-        '#faq' => __('landing.nav.faq'),
+        route('home').'#how' => __('landing.nav.how'),
+        route('home').'#pricing' => __('landing.nav.pricing'),
+        route('home').'#pickup' => __('landing.nav.pickup'),
+        route('home').'#runners' => __('landing.nav.runners'),
+        route('home').'#faq' => __('landing.nav.faq'),
     ];
 @endphp
 
@@ -59,6 +59,8 @@
             <p class="text-xs leading-relaxed text-ink-muted">{{ __('landing.footer.disclaimer') }}</p>
             <p class="mt-3 text-xs text-ink-muted">
                 &copy; {{ now()->year }} {{ config('app.name') }}. {{ __('landing.footer.rights') }}
+                <span aria-hidden="true">&middot;</span>
+                <a href="{{ route('privacy') }}" class="underline transition hover:text-brand-700">{{ __('landing.footer.privacy') }}</a>
             </p>
         </div>
     </div>

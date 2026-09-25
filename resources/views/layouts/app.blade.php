@@ -27,6 +27,8 @@
     {{-- Set before paint so the reveal animation never leaves content blank when JS is off. --}}
     <script>document.documentElement.classList.add('js');</script>
 
+    @stack('head')
+
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="relative min-h-screen font-sans antialiased">

@@ -21,7 +21,7 @@
                 </p>
 
                 <div class="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row lg:justify-start">
-                    <a href="{{ config('jubahrunner.register_url') }}" class="btn-primary w-full sm:w-auto">
+                    <a href="{{ $registerUrl }}" class="btn-primary w-full sm:w-auto">
                         {{ __('landing.hero.primary') }}
                         <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" aria-hidden="true">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14m-6-6 6 6-6 6"/>

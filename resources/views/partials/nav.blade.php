@@ -1,10 +1,10 @@
 @php
     $links = [
-        '#how' => __('landing.nav.how'),
-        '#pricing' => __('landing.nav.pricing'),
-        '#pickup' => __('landing.nav.pickup'),
-        '#runners' => __('landing.nav.runners'),
-        '#faq' => __('landing.nav.faq'),
+        route('home').'#how' => __('landing.nav.how'),
+        route('home').'#pricing' => __('landing.nav.pricing'),
+        route('home').'#pickup' => __('landing.nav.pickup'),
+        route('home').'#runners' => __('landing.nav.runners'),
+        route('home').'#faq' => __('landing.nav.faq'),
     ];
     $locales = ['ms' => 'BM', 'en' => 'EN'];
     $current = app()->getLocale();
@@ -46,7 +46,7 @@
                 @endforeach
             </div>
 
-            <a href="{{ config('jubahrunner.register_url') }}"
+            <a href="{{ $registerUrl }}"
                class="btn-primary hidden !px-5 !py-2.5 sm:inline-flex">{{ __('landing.nav.cta') }}</a>
 
             <button type="button" data-menu-toggle aria-expanded="false" aria-controls="mobile-menu"
@@ -67,7 +67,7 @@
                 <li><a href="{{ $href }}" class="block rounded-xl px-3 py-3 transition hover:bg-brand-50">{{ $label }}</a></li>
             @endforeach
             <li class="pt-2">
-                <a href="{{ config('jubahrunner.register_url') }}" class="btn-primary w-full">{{ __('landing.nav.cta') }}</a>
+                <a href="{{ $registerUrl }}" class="btn-primary w-full">{{ __('landing.nav.cta') }}</a>
             </li>
         </ul>
     </div>

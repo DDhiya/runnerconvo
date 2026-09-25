@@ -31,7 +31,7 @@
                     @endforeach
                 </ul>
 
-                <a href="{{ config('jubahrunner.register_url') }}" class="btn-primary mt-8 w-full">
+                <a href="{{ $registerUrl }}" class="btn-primary mt-8 w-full">
                     {{ __('landing.pricing.cta') }}
                 </a>
 

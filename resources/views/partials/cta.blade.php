@@ -13,7 +13,7 @@
             <p class="mx-auto mt-4 max-w-xl text-white/90">{{ __('landing.cta.body') }}</p>
 
             <div class="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
-                <a href="{{ config('jubahrunner.register_url') }}"
+                <a href="{{ $registerUrl }}"
                    class="btn w-full bg-white text-brand-700 shadow-lg hover:-translate-y-0.5 sm:w-auto">
                     {{ __('landing.cta.primary') }}
                 </a>

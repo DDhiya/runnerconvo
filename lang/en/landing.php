@@ -188,6 +188,7 @@ return [
         'follow' => 'Follow',
         'disclaimer' => 'JubahPanda is an independent service. We are not affiliated with, endorsed by, or representing Universiti Malaysia Pahang Al-Sultan Abdullah.',
         'rights' => 'All rights reserved.',
+        'privacy' => 'Privacy notice',
     ],
 
 ];

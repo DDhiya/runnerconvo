@@ -60,7 +60,7 @@
                             <div class="flex items-center justify-end gap-3">
                                 <a href="{{ route('admin.runners.edit', $runner) }}" class="font-semibold text-brand-600 transition hover:text-brand-700">Edit</a>
                                 <form method="POST" action="{{ route('admin.runners.destroy', $runner) }}"
-                                      onsubmit="return confirm('Delete {{ $runner->name }}? This cannot be undone.');">
+                                      onsubmit="return confirm('Delete {{ $runner->name }}? This cannot be undone.{{ $runner->bookings_count ? ' '.$runner->bookings_count.' booking(s) assigned to them will become unassigned.' : '' }}');">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" class="font-semibold text-ink-muted transition hover:text-brand-700">Delete</button>

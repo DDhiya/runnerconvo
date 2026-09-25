@@ -43,4 +43,33 @@ class LandingPageTest extends TestCase
     {
         $this->get('/')->assertDontSee(__('landing.runners.title'));
     }
+
+    public function test_register_buttons_point_at_the_in_app_form_by_default(): void
+    {
+        $this->get('/')->assertSee('href="'.route('register').'"', false);
+    }
+
+    public function test_register_url_env_override_wins_as_a_kill_switch(): void
+    {
+        config(['jubahrunner.register_url' => 'https://wa.me/60111111111']);
+
+        $this->get('/')
+            ->assertSee('href="https://wa.me/60111111111"', false)
+            ->assertDontSee('href="'.route('register').'"', false);
+    }
+
+    public function test_nav_links_are_absolute_so_they_work_from_other_pages(): void
+    {
+        // On /register a bare "#how" would resolve to /register#how and go nowhere.
+        $this->get('/register')->assertSee('href="'.route('home').'#how"', false);
+    }
+
+    public function test_the_snapshotted_price_matches_the_price_shown_on_the_page(): void
+    {
+        foreach (['en', 'ms'] as $locale) {
+            $shown = (int) preg_replace('/\D/', '', __('landing.pricing.price', [], $locale));
+
+            $this->assertSame(config('jubahrunner.price_sen'), $shown * 100, "pricing.price ({$locale}) has drifted from jubahrunner.price_sen");
+        }
+    }
 }

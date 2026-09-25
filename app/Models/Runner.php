@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 #[Fillable(['name', 'phone', 'position', 'is_active'])]
 class Runner extends Model
@@ -61,6 +62,12 @@ class Runner extends Model
     protected function whatsappUrl(): Attribute
     {
         return Attribute::get(fn (): string => 'https://wa.me/'.$this->phone);
+    }
+
+    /** @return HasMany<Booking, $this> */
+    public function bookings(): HasMany
+    {
+        return $this->hasMany(Booking::class);
     }
 
     /** "+60 14-533 2637" and "014-533 2637" both become "60145332637". */

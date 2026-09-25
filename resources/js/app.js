@@ -72,3 +72,42 @@ if (revealables.length && !prefersReducedMotion.matches && 'IntersectionObserver
 } else {
     revealables.forEach((el) => el.classList.add('is-visible'));
 }
+
+/* Registration form -------------------------------------------------------- */
+
+// Land keyboard and screen-reader users on the error summary after a failed submit.
+document.querySelector('[data-error-summary]')?.focus();
+
+// Cash-on-delivery address: shown only for COD. Without JS it stays visible.
+const addressBlock = document.querySelector('[data-delivery-address]');
+const deliveryRadios = document.querySelectorAll('[data-delivery-radio]');
+
+if (addressBlock && deliveryRadios.length) {
+    const syncAddress = () => {
+        const cod = document.querySelector('[data-delivery-radio][value="cod"]');
+        addressBlock.hidden = !(cod && cod.checked);
+    };
+
+    deliveryRadios.forEach((radio) => radio.addEventListener('change', syncAddress));
+    syncAddress();
+}
+
+// Stop double submits. The partial unique index is the real guard; this just avoids a
+// confusing duplicate-matric error after an impatient second tap.
+document.querySelectorAll('form[data-submit-once]').forEach((form) => {
+    form.addEventListener('submit', () => {
+        form.querySelectorAll('button[type="submit"]').forEach((button) => {
+            button.disabled = true;
+        });
+    });
+});
+
+// Coming back with the browser Back button restores the page from cache with the button
+// still disabled.
+window.addEventListener('pageshow', (event) => {
+    if (event.persisted) {
+        document.querySelectorAll('form[data-submit-once] button[type="submit"]').forEach((button) => {
+            button.disabled = false;
+        });
+    }
+});

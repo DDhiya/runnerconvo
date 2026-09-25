@@ -8,9 +8,9 @@
 | Every placeholder the landing page needs lives here, so going live is a
 | matter of filling in .env rather than hunting through Blade templates.
 |
-| TODO before launch: set JP_WHATSAPP_NUMBER, JP_INSTAGRAM, JP_EMAIL and
-| JP_REGISTER_URL in .env. Until JP_REGISTER_URL is set, every "Register"
-| button falls back to opening a WhatsApp chat.
+| TODO before launch: set JP_WHATSAPP_NUMBER, JP_INSTAGRAM and JP_EMAIL in
+| .env. The Register buttons point at the in-app form (/register) unless
+| JP_REGISTER_URL overrides them.
 |
 */
 
@@ -30,11 +30,30 @@ return [
     'instagram' => $instagram,
     'instagram_url' => 'https://instagram.com/'.$instagram,
 
-    'email' => env('JP_EMAIL', 'hello@jubahpanda.my'),
+    'email' => env('JP_EMAIL', 'support@jubahpanda.my'),
 
-    // Point this at your registration form (Google Form for now, a real
-    // Laravel form later). Falls back to WhatsApp so no CTA is ever dead.
-    'register_url' => env('JP_REGISTER_URL') ?: 'https://wa.me/'.$whatsapp,
+    // Blank (the default) means the in-app form at /register. Set it only as an
+    // override — e.g. back to https://wa.me/... as a KILL SWITCH if the form
+    // misbehaves; flipping it is an .env edit + config:cache, no deploy. route()
+    // cannot be called here: config is evaluated, and cached, before routes exist,
+    // so the fallback is resolved in AppServiceProvider's view composer.
+    'register_url' => env('JP_REGISTER_URL') ?: null,
+
+    // Registration closes at this moment, read as Kuala Lumpur time
+    // (e.g. "2026-10-21 23:59"). Blank = open indefinitely.
+    'registration_closes_at' => env('JP_REGISTRATION_CLOSES_AT') ?: null,
+
+    // App storage stays UTC (config/app.php); this is for parsing the closing date
+    // and for displaying times in the admin.
+    'timezone' => 'Asia/Kuala_Lumpur',
+
+    // Snapshotted onto each booking. Must match pricing.price in lang/*/landing.php;
+    // LandingPageTest enforces it.
+    'price_sen' => 4500,
+
+    // Bump whenever lang/*/privacy.php changes materially; stored on each booking.
+    'privacy_version' => '2026-09-25',
+    'retention_days' => 365,
 
     // Pickup point. The embed URL needs no API key — Google serves a basic
     // "for development purposes" pin from a plain ?q= query.

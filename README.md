@@ -11,9 +11,14 @@ store it safely, and hand it over 1–2 days before convocation.
 
 ## Status
 
-This is the **landing page skeleton**. It is a static marketing page — there is no
-database-backed registration form, no payment gateway, and no admin panel yet.
-Every "Register" button points at `JP_REGISTER_URL` (a Google Form or WhatsApp for now).
+A bilingual landing page plus a **registration form** (`/register`) that stores bookings in
+SQLite, and a password-protected **admin** (`/admin`) where the team manages bookings, runners
+and the form's option lists (faculties, robe sizes, convocation sessions). There is no payment
+gateway yet — the booking schema already has the columns one will fill.
+
+`JP_REGISTER_URL` is now only an **override / kill switch**: blank sends every "Register" button
+to `/register`; set it to a `wa.me` link to point them elsewhere instantly (`.env` + `config:cache`,
+no deploy). The full design is in [`docs/registration-form-plan.md`](docs/registration-form-plan.md).
 
 ## Stack
 
@@ -90,8 +95,9 @@ Set these in `.env`:
 |---|---|
 | `JP_WHATSAPP_NUMBER` | Digits only, international format, no `+` (e.g. `60123456789`) |
 | `JP_INSTAGRAM` | Handle without the `@` |
-| `JP_EMAIL` | Contact address |
-| `JP_REGISTER_URL` | Registration form link; falls back to WhatsApp if blank |
+| `JP_EMAIL` | Contact address, shown in the footer and the privacy notice (`support@jubahpanda.my`) |
+| `JP_REGISTER_URL` | Blank = the in-app form at `/register`. Override / kill switch only |
+| `JP_REGISTRATION_CLOSES_AT` | e.g. `2026-10-21 23:59`, Kuala Lumpur time. Blank = open indefinitely |
 | `JP_ADDRESS` | Pickup point address, shown on the page and used to build the map embed |
 | `JP_MAP_URL` | "Get directions" link (a Google Maps share link) |
 
@@ -107,6 +113,14 @@ Also outstanding:
 
 ## Next steps
 
-1. Real registration form persisting to a database
-2. Payment integration
-3. Admin view for the team to see bookings and payment status
+1. **Payment integration** - fills `paid_at` / `payment_method` / `payment_reference` on `bookings`
+   and moves `submitted` to `confirmed`; nothing else in the schema changes.
+2. **Captcha, only if junk bookings appear.** The form is protected by a honeypot, a 3-second
+   timer and a per-IP throttle. If that is not enough, use **Cloudflare Turnstile** (free, native to
+   the Cloudflare zone, no image puzzles, sends nothing to Google): a widget script, a
+   `TURNSTILE_SECRET` in `.env` read via `config/services.php`, and one `Http::asForm()->post()` to
+   `siteverify` in `RegistrationRequest::after()`. A zero-code first step is one Cloudflare
+   edge rate-limiting rule on `POST /register`.
+3. **Confirmation email** - needs real mail (prod is `MAIL_MAILER=log`) and the `support@` mailbox.
+4. **Master/PhD matric format** - `Booking::matricRuleFor()` accepts any 5-15 letter/digit value
+   for them until the real format is confirmed (`TODO(matric)`).

@@ -96,11 +96,14 @@ so the file is not web-reachable. Still `chmod 600`, owned by `runnerconvo`.
 
 ### A small SQLite database
 
-As of 2026-09-24 the app has one table: `runners` (the eight-person team directory shown on the
-landing page and edited at `/admin`), plus Laravel's stock `users` table for the admin login. That's
-it — no other feature touches a database. SQLite was chosen over the MySQL already running on the
-box (see below) because there is no user/grant/backup plumbing to stand up for ~8-10 rows and no
-second daemon to babysit; the whole database is one file.
+The app keeps its state in one SQLite file. As of 2026-09-24 that was `runners` (the eight-person
+team directory shown on the landing page and edited at `/admin`) plus Laravel's stock `users` table
+for the admin login. As of 2026-09-25 it also holds **`bookings`** and **`booking_options`** — the
+registration form's data, which is **graduates' personal data** (name, matric number, phone, and a
+Kuantan address for COD). See "Personal data" below. SQLite was chosen over the MySQL already
+running on the box because a few hundred rows and one writer at a time (WAL and `busy_timeout` are
+already on) don't justify standing up user/grant/backup plumbing and a second daemon to babysit;
+the whole database is one file. The ceiling is concurrent writes, not row count.
 
 The file lives at `/opt/runnerconvo/runnerconvo/database/database.sqlite` — **inside** the checkout
 (same reasoning as `.env`'s location above: Laravel resolves the path relative to its own base path,
@@ -112,9 +115,10 @@ now.
 **This file is the only non-reproducible state on this box.** `git clone` no longer fully
 reconstitutes the app on its own — see "Backing up the database" below.
 
-**Do not provision MySQL for this.** MySQL 8.0.46 is already running on the box for when the
-registration form lands — that is a future deploy, not this one, and still has nothing to do with
-the runner directory.
+**Do not provision MySQL for this.** MySQL 8.0.46 is running on the box for other apps, but the
+registration form was deliberately built on SQLite too. If a launch-day rush ever produced
+`database is locked` (the 500 page tells graduates their booking was not saved and to retry),
+moving to MySQL is the next step — not something to do preemptively.
 
 ## Prerequisites on the box (none of this exists yet)
 
@@ -123,9 +127,8 @@ the runner directory.
 add-apt-repository -y ppa:ondrej/php && apt update
 apt install -y php8.4-fpm php8.4-cli php8.4-mbstring php8.4-xml php8.4-curl \
                php8.4-zip php8.4-intl php8.4-bcmath php8.4-sqlite3
-# php8.4-mysql is still NOT needed — the runner directory and admin login use SQLite
-# (php8.4-sqlite3 above), and the registration form (whenever it lands) is a separate
-# future deploy.
+# php8.4-mysql is still NOT needed — the runner directory, the admin login and the
+# registration form all use SQLite (php8.4-sqlite3 above).
 
 # Composer — Ubuntu's package, not the getcomposer.org installer. 2.7.1 is older than
 # local (2.10.2) but only ever runs `install` from a committed lock file here, so the
@@ -211,8 +214,11 @@ QUEUE_CONNECTION=sync
 # still carrying JR_ names silently falls back to the config defaults.
 JP_WHATSAPP_NUMBER=
 JP_INSTAGRAM=
-JP_EMAIL=
+JP_EMAIL=support@jubahpanda.my
+# Blank = Register buttons open the in-app form at /register. Set to a wa.me link ONLY as
+# a kill switch, then config:cache. See "Registration: close, reopen, kill switch" below.
 JP_REGISTER_URL=
+JP_REGISTRATION_CLOSES_AT="2026-10-21 23:59"
 JP_ADDRESS=
 JP_MAP_URL=
 EOF
@@ -339,6 +345,15 @@ the **New migration** bullet below. Run `migrate --force` between `config:cache`
 - **`.env` change**: edit it by hand over SSH — `git pull` never touches it — then
   `php artisan config:cache` again. Skipping that is the single most common way a config change
   appears to do nothing.
+- **Registration: close, reopen, kill switch** — all `.env` edits plus `config:cache`, no deploy:
+  - *Close on a date:* `JP_REGISTRATION_CLOSES_AT="2026-10-21 23:59"` (Kuala Lumpur time). After it,
+    `/register` shows a "closed" card and rejects POSTs. A past time closes it immediately; blank
+    means open indefinitely.
+  - *Kill switch:* `JP_REGISTER_URL=https://wa.me/<number>` points every Register button back at
+    WhatsApp instantly. It does **not** hide `/register` — anyone holding the direct link can still
+    register until the closing date passes, so set that to a past time as well if that matters.
+  - *"Opens soon":* `/register` also shows this until faculties, robe sizes and convocation
+    sessions each have at least one active entry (`/admin/options/...`).
 - **Vhost changed** (`deploy/runnerconvo.conf`): careful — certbot has rewritten the installed copy
   and generated `runnerconvo-le-ssl.conf` beside it. Re-copying the repo version **discards
   certbot's redirect block**. Apply the change by hand to both installed files instead, or re-copy
@@ -360,6 +375,14 @@ curl -s  https://jubahpanda.my/ | grep -c 'wa.me/60'                     # >= 8
 curl -s  https://jubahpanda.my/ | grep -o 'id="runners"'                 # present
 curl -sI https://jubahpanda.my/database/database.sqlite | head -1        # 404 — docroot is public/
 curl -sI https://jubahpanda.my/admin | head -1                           # 302 to /admin/login, NOT 401
+
+# Registration form (after the bookings deploy below).
+curl -sI https://jubahpanda.my/register | head -1                        # 200
+curl -s  https://jubahpanda.my/register | grep -c 'contact_me_by_fax_only'   # 1 (the honeypot)
+curl -s  -o /dev/null -w '%{http_code}\n' -X POST https://jubahpanda.my/register   # 419 (no CSRF token)
+curl -sI https://jubahpanda.my/register/done | grep -i location          # -> /register (no session)
+curl -sI https://jubahpanda.my/admin/bookings | head -1                  # 302 to /admin/login
+curl -sI https://jubahpanda.my/privacy | head -1                         # 200
 ```
 
 A bare `401` on that last check means the `redirectGuestsTo`/`redirectUsersTo` configuration in
@@ -442,6 +465,58 @@ ssh -t 160.30.5.87 "cd /opt/runnerconvo/runnerconvo \
   && sudo -u runnerconvo php artisan jubahpanda:admin you@example.com --name='Your Name'"
 ```
 
+## Adding the registration form (2026-09-25)
+
+One code deploy that ships the form **unlinked**, so it can be tested live before any button points
+at it. Nothing public changes until the flip. Full reasoning: `docs/registration-form-plan.md`.
+
+```bash
+# 0. Pre-flight: is mod_remoteip already rewriting REMOTE_ADDR? Either answer is fine
+#    (the app trusts Cloudflare's ranges itself); just know which it is.
+ssh 160.30.5.87 "apache2ctl -M 2>/dev/null | grep -i remoteip || echo 'not loaded'"
+
+# 1. Backup NOW, before the first migration that touches data worth keeping.
+ssh 160.30.5.87 "apt install -y sqlite3 && install -d -o runnerconvo -g runnerconvo -m 700 /var/backups/jubahpanda \
+  && sudo -u runnerconvo sqlite3 /opt/runnerconvo/runnerconvo/database/database.sqlite \
+     \".backup /var/backups/jubahpanda/pre-bookings.sqlite\""
+
+# 2. .env by hand: pin the Register buttons to their CURRENT target so this deploy changes
+#    nothing publicly, and set the closing date and contact address.
+#      JP_REGISTER_URL=https://wa.me/<JP_WHATSAPP_NUMBER>
+#      JP_REGISTRATION_CLOSES_AT="2026-10-21 23:59"
+#      JP_EMAIL=support@jubahpanda.my
+
+# 3. Pull, config FIRST so migrate sees current config, migrate, then the other caches.
+ssh 160.30.5.87 "cd /opt/runnerconvo/runnerconvo \
+  && sudo -u runnerconvo git pull \
+  && sudo -u runnerconvo php artisan config:cache \
+  && sudo -u runnerconvo php artisan migrate --force \
+  && sudo -u runnerconvo php artisan route:cache \
+  && sudo -u runnerconvo php artisan view:cache"
+
+# 4. Assets — LOCAL machine. The form, radio cards, admin tables and nav are all new
+#    Tailwind utilities; skipping this renders /register unstyled. Same block as the bootstrap.
+
+# 5. Cron: nightly backup + the one-year retention purge.
+scp deploy/jubahpanda.cron 160.30.5.87:/tmp/jubahpanda.cron
+ssh 160.30.5.87 "install -m 644 -o root -g root /tmp/jubahpanda.cron /etc/cron.d/jubahpanda && rm /tmp/jubahpanda.cron"
+```
+
+**Enter the option lists.** Log in and fill in `/admin/options/faculty`, `robe_size` and
+`convocation_session` in both languages. Until all three have an active entry `/register` shows
+"opens soon" — intended, and it means this can happen before or after the steps above.
+
+**Test live while unlinked.** Open `https://jubahpanda.my/register` on a phone, in both languages.
+Submit a booking with an obviously fake matric that still fits the format (`ZZ99001`), find it in
+`/admin/bookings`, walk it through every status, export a CSV, then **delete it**. Also try deleting
+an option that booking used *before* deleting the booking: it should refuse.
+
+**Flip.** Blank `JP_REGISTER_URL=` in `.env` and `config:cache`. The five Register buttons now open
+`/register`. **Undo** is the same edit in reverse (see "Registration: close, reopen, kill switch").
+
+The `support@jubahpanda.my` mailbox must work before the flip: the privacy notice names it as a
+contact for access and correction requests.
+
 ### Sessions, cache and queue stay file-backed
 
 Explicitly **do not** switch `SESSION_DRIVER` to `database` just because a database now exists. The
@@ -460,24 +535,71 @@ does matter for the backup method below — hence backing up from a root shell, 
 ## Backing up the database
 
 `database/database.sqlite` is the only state on this box that `git pull` cannot reconstitute (see "A
-small SQLite database" above). Losing it costs a re-run of `RunnerSeeder` (in git) plus
-`jubahpanda:admin` — small today, but the blast radius grows the moment the registration form lands
-and starts writing bookings here.
+small SQLite database" above). **Backups are no longer optional**: the file holds every graduate's
+booking, and a lost database is a lost intake.
+
+**Nightly, on the box:** `deploy/jubahpanda.cron` (installed as `/etc/cron.d/jubahpanda`) takes an
+atomic `.backup` at 03:15 into `/var/backups/jubahpanda/`, keeps 14 days, and runs the retention
+purge at 03:30. It runs as `runnerconvo`, **not root** — a root `sqlite3` on a WAL database can create
+root-owned `-wal`/`-shm` files, after which php-fpm fails every write with "attempt to write a
+readonly database".
 
 ```bash
-# One-time: the sqlite3 CLI is not installed by the app (only the PDO extension is).
-ssh 160.30.5.87 "apt install -y sqlite3"
+# One-time.
+ssh 160.30.5.87 "apt install -y sqlite3 && install -d -o runnerconvo -g runnerconvo -m 700 /var/backups/jubahpanda"
+scp deploy/jubahpanda.cron 160.30.5.87:/tmp/jubahpanda.cron
+ssh 160.30.5.87 "install -m 644 -o root -g root /tmp/jubahpanda.cron /etc/cron.d/jubahpanda && rm /tmp/jubahpanda.cron"
 
-# .backup is atomic even if a write is in progress — a plain `cp` can copy a torn
-# file mid-write and is not safe here.
+# By hand, before anything risky (a migration, a bulk edit). .backup is atomic even if a write
+# is in progress; a plain `cp` can copy a torn file mid-write and is not safe here.
 ssh 160.30.5.87 "sudo -u runnerconvo sqlite3 /opt/runnerconvo/runnerconvo/database/database.sqlite \
-  \".backup /tmp/jubahpanda-\$(date +%F).sqlite\""
-scp 160.30.5.87:/tmp/jubahpanda-*.sqlite ./backups/
-ssh 160.30.5.87 "rm /tmp/jubahpanda-*.sqlite"   # don't leave copies lying around in /tmp
+  \".backup /var/backups/jubahpanda/manual-\$(date +%F-%H%M).sqlite\""
 ```
 
-There is no schedule for this yet — run it by hand before anything risky (a migration, a bulk edit),
-and set up a cron job once the registration form makes the data worth losing sleep over.
+**Off-box copy — and where NOT to put it.** A copy on the same VPS doesn't survive losing the VPS,
+so pull one to another machine now and then. **Do not copy it into a OneDrive-synced folder.** This
+repo's working copy lives under `OneDrive - UMPSA\...`, so the old `scp ... ./backups/` would sync
+graduates' matric and phone numbers into the university's OneDrive tenant. (`*.sqlite` is
+gitignored, but that doesn't stop OneDrive.) Use a local, non-synced path:
+
+```bash
+scp 160.30.5.87:/var/backups/jubahpanda/jubahpanda-2026-10-01.sqlite "C:/Users/<you>/Backups/"
+```
+
+**Restore drill** — do it once, before you need it, on a copy:
+
+```bash
+sqlite3 copy.sqlite "PRAGMA integrity_check; SELECT count(*) FROM bookings;"     # ok, then a count
+```
+
+To restore for real: stop writes (`php artisan down`), replace `database.sqlite` with the copy
+(owner `runnerconvo`, mode 600, delete any stale `-wal`/`-shm`), then `php artisan up`.
+
+## Personal data
+
+`bookings` holds names, matric numbers, WhatsApp numbers and (for COD) Kuantan addresses — personal
+data under Malaysia's PDPA 2010. No IC numbers, no uploaded documents: the authorisation letter goes
+over WhatsApp, never to this box. The notice graduates agree to is `/privacy` (both languages);
+each booking records `consented_at` and the `privacy_version` they agreed to. **Bump
+`jubahrunner.privacy_version`** whenever `lang/*/privacy.php` changes materially.
+
+- **Who can see it:** every admin account sees every booking — there are no roles. Keep the number
+  of accounts to the people who actually handle bookings.
+- **Removing someone's access:** `sudo -u runnerconvo php artisan tinker --execute="App\Models\User::where('email','x@y.z')->delete();"`
+- **Who took a copy:** every CSV export writes `bookings.exported` (user, filters, row count — no
+  personal data) to `storage/logs/laravel.log`: `grep bookings.exported storage/logs/laravel*.log`.
+- **Erasure / consent withdrawal:** `/admin/bookings/<reference>` → "Delete permanently". Cancelling
+  keeps the row; only deleting erases it. Backups may hold a copy for up to 14 more days (the
+  notice says so).
+- **Retention:** one year from registration (`jubahrunner.retention_days`), enforced nightly by
+  `php artisan jubahpanda:purge-bookings --force` from cron. Check what it would do with
+  `--dry-run`. The first real deletions happen in October 2027 — the cron job exists from now so
+  nobody has to remember.
+- **If the database leaks:** the 2024 PDPA amendments (in force 2025) require notifying the Personal
+  Data Protection Commissioner within 72 hours, and affected individuals without undue delay where
+  significant harm is likely. Check the Commissioner's current guidelines at the time. Start with
+  the export log and Apache's access log to establish what left and when, and rotate every admin
+  password with `jubahpanda:admin`.
 
 ## Domain history: convo.dhiyadanial.my → jubahpanda.my
 
@@ -590,6 +712,14 @@ WhatsApp group still points there, and it costs nothing to keep answering on the
   `database/.gitignore` (`*.sqlite*`) — belt and braces on purpose.
 - **Do not run `migrate:fresh` or `migrate:refresh` in production.** Both drop the `runners` table
   and the admin `users` row along with it.
+- **Do not copy the database or a CSV export into OneDrive, WhatsApp, email or a shared drive.** They
+  contain graduates' personal data. See "Backing up the database" and "Personal data".
+- **Do not run `sqlite3` against the live file as root** (or `sudo sqlite3` without `-u runnerconvo`):
+  it can leave root-owned `-wal`/`-shm` files that break every write from php-fpm.
+- **Do not delete `/etc/cron.d/jubahpanda` to "clean up".** It is the nightly backup and the
+  retention purge, and nothing else runs either of them.
+- **Do not try to delete a booking option that bookings use** — deactivate it instead (the admin
+  refuses the delete anyway). Renaming is fine and shows up on every booking that uses it.
 - **Do not run `db:seed` without `--class=`.** The bare `DatabaseSeeder` used to create a
   `test@example.com` user with a known factory password; it no longer does (see `DatabaseSeeder`),
   but always name the seeder explicitly on a production box regardless.

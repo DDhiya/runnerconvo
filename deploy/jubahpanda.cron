@@ -1,0 +1,19 @@
+# Installed as /etc/cron.d/jubahpanda (root:root, mode 644). File names in cron.d must not
+# contain a dot, which is why the installed name drops the .cron extension.
+#
+# Both jobs run as `runnerconvo`, NOT root. A root sqlite3 opening a WAL database can create
+# root-owned -wal/-shm files, and php-fpm (runnerconvo) then fails every write with
+# "attempt to write a readonly database".
+#
+# In cron, a literal % must be escaped as backslash-percent.
+
+SHELL=/bin/bash
+PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+
+# 03:15 - atomic online backup of the database, keeping 14 days. Needs:
+#   apt install -y sqlite3
+#   install -d -o runnerconvo -g runnerconvo -m 700 /var/backups/jubahpanda
+15 3 * * * runnerconvo sqlite3 /opt/runnerconvo/runnerconvo/database/database.sqlite ".backup /var/backups/jubahpanda/jubahpanda-$(date +\%F).sqlite" && find /var/backups/jubahpanda -name '*.sqlite' -mtime +14 -delete
+
+# 03:30 - PDPA retention: delete bookings older than one year (jubahrunner.retention_days).
+30 3 * * * runnerconvo cd /opt/runnerconvo/runnerconvo && php artisan jubahpanda:purge-bookings --force >/dev/null

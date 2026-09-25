@@ -33,7 +33,7 @@ class LoginController extends Controller
         // Session-fixation defence: rotate the session id on privilege change.
         $request->session()->regenerate();
 
-        return redirect()->intended(route('admin.runners.index'));
+        return redirect()->intended(route('admin.bookings.index'));
     }
 
     public function destroy(Request $request): RedirectResponse

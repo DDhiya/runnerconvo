@@ -13,7 +13,7 @@ class RunnerController extends Controller
     public function index(): View
     {
         // No active() scope — the admin must see deactivated runners to reactivate them.
-        return view('admin.runners.index', ['runners' => Runner::ordered()->get()]);
+        return view('admin.runners.index', ['runners' => Runner::ordered()->withCount('bookings')->get()]);
     }
 
     public function create(): View

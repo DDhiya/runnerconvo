@@ -34,7 +34,7 @@ class AdminAuthTest extends TestCase
         ]);
 
         $this->assertAuthenticatedAs($user);
-        $response->assertRedirect(route('admin.runners.index'));
+        $response->assertRedirect(route('admin.bookings.index'));
     }
 
     public function test_a_wrong_password_is_rejected(): void
@@ -68,6 +68,6 @@ class AdminAuthTest extends TestCase
 
         $this->actingAs($user)
             ->get(route('admin.login'))
-            ->assertRedirect(route('admin.runners.index'));
+            ->assertRedirect(route('admin.bookings.index'));
     }
 }
