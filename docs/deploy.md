@@ -209,6 +209,14 @@ SESSION_SECURE_COOKIE=true
 CACHE_STORE=file
 QUEUE_CONNECTION=sync
 
+# Outbound mail via Resend's HTTP API (443, so no SMTP-port blocking to worry
+# about). RESEND_API_KEY is the `laravel-prod` key — see "Mail" below. The
+# from-address must be on the verified jubahpanda.my domain or Resend rejects it.
+MAIL_MAILER=resend
+RESEND_API_KEY=
+MAIL_FROM_ADDRESS=support@jubahpanda.my
+MAIL_FROM_NAME="JubahPanda"
+
 # Contact + pickup details — see README.md. Renamed from JR_* to JP_* on
 # 2026-09-23; config/jubahrunner.php reads the JP_ names only, so an .env
 # still carrying JR_ names silently falls back to the config defaults.
@@ -601,6 +609,62 @@ each booking records `consented_at` and the `privacy_version` they agreed to. **
   the export log and Apache's access log to establish what left and when, and rotate every admin
   password with `jubahpanda:admin`.
 
+## Mail (2026-09-25)
+
+There is no mail server on this box and there should never be one. Mail is two hosted services,
+both configured in dashboards rather than in this repo:
+
+| Direction | Service | What it does |
+|---|---|---|
+| Inbound | **Cloudflare Email Routing** (free) | Forwards `support@jubahpanda.my` to the team's Gmail inbox. No mailbox of its own. |
+| Outbound | **Resend** (free tier, ~3,000/month, 100/day) | Sends as `support@` for both the Laravel app and Gmail "Send mail as". |
+
+**DNS, all in the Cloudflare zone.** Each service owns its own names, so neither can break the other:
+
+| Name | Type | Owner |
+|---|---|---|
+| `@` | 3× MX `route{1,2,3}.mx.cloudflare.net` | Email Routing — added by the dashboard, do not hand-edit |
+| `@` | TXT `v=spf1 include:_spf.mx.cloudflare.net ~all` | Email Routing |
+| `cf2024-1._domainkey` | TXT (DKIM) | Email Routing |
+| `send` | MX + TXT `v=spf1 include:amazonses.com ~all` | Resend (bounce/return-path) |
+| `resend._domainkey` | TXT (DKIM) | Resend — this is what makes outbound pass DMARC |
+| `_dmarc` | TXT `v=DMARC1; p=none; …` | Us. Move to `p=quarantine` once a few weeks of reports show only passing mail. |
+
+**Routing rules** live at Cloudflare → jubahpanda.my → Email → Email Routing. Delivery attempts show
+up in its Activity log — check there first if mail "didn't arrive". Test from an address *other*
+than the destination Gmail: Gmail silently hides mail you sent to yourself that comes back through
+forwarding, so a self-test looks like a failure when it isn't.
+
+**Two Resend API keys, both "Sending access" scoped to jubahpanda.my**, so either can be revoked
+without breaking the other:
+
+- `gmail-send-as` — typed into Gmail → Settings → Accounts → "Send mail as" (`smtp.resend.com`,
+  port 465, username `resend`, password = the key). Never in any `.env`.
+- `laravel-prod` — `RESEND_API_KEY` in the VPS `.env` only (see the heredoc above), read through
+  `config/services.php`. The `resend` transport needs `resend/resend-php`, already in
+  `composer.json`. Local `.env` stays `MAIL_MAILER=log` with no key.
+
+Changing any of the `MAIL_*`/`RESEND_*` values is an ordinary `.env` change: edit, then
+`config:cache`. To prove the app can send:
+
+```bash
+ssh -t 160.30.5.87
+cd /opt/runnerconvo/runnerconvo && sudo -u runnerconvo php artisan tinker
+>>> Mail::raw('Resend test', fn ($m) => $m->to('you@example.com')->subject('Test'));
+```
+
+As of 2026-09-25 no app code sends mail — that works, but nothing uses it yet. The first user will
+be a booking confirmation (README, "Next steps").
+
+**Resend suspended the account minutes after signup** — an automated check on new accounts. It was
+reinstated after the review form was filled in honestly (low volume, support replies + transactional
+only, no marketing, no lists). If it ever happens again and review fails, **Brevo** or **Amazon SES**
+drop in the same way: records on a subdomain plus a DKIM name, then a new SMTP host / key in Gmail
+and `.env`. Inbound is unaffected either way.
+
+**Moving to a real mailbox later** (Zoho, Google Workspace) means turning Email Routing *off* first —
+it owns the root MX records, and the two cannot share them.
+
 ## Domain history: convo.dhiyadanial.my → jubahpanda.my
 
 The real domain is **jubahpanda.my** (not `jubahrunner.my`, which this file used to guess at and
@@ -723,3 +787,7 @@ WhatsApp group still points there, and it costs nothing to keep answering on the
 - **Do not run `db:seed` without `--class=`.** The bare `DatabaseSeeder` used to create a
   `test@example.com` user with a known factory password; it no longer does (see `DatabaseSeeder`),
   but always name the seeder explicitly on a production box regardless.
+- **Do not hand-edit the root MX or SPF records** on jubahpanda.my. Email Routing owns them; Resend's
+  records live on `send.` and `resend._domainkey` precisely so they don't need to. See "Mail".
+- **Do not put `RESEND_API_KEY` in the local `.env` or `.env.example`.** It lives in the VPS `.env`
+  only, and local development stays on `MAIL_MAILER=log`.

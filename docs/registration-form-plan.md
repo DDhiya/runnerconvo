@@ -990,7 +990,9 @@ ssh 160.30.5.87 "ls -l /var/backups/jubahpanda/"                         # next 
 4. **No captcha.** The bet is that honeypot, time trap and throttle are enough for an unadvertised
    URL. Turnstile is about 30 lines if the bet turns out wrong.
 5. **No email confirmation.** `MAIL_MAILER=log`, and WhatsApp is the real channel anyway. The
-   reference on the done page, plus the prefilled WhatsApp message, is the receipt.
+   reference on the done page, plus the prefilled WhatsApp message, is the receipt. (Since
+   2026-09-25 prod mail works, via Resend. See "Mail" in `docs/deploy.md`. This is now a choice
+   rather than a constraint.)
 6. **Every admin sees every booking**, with no roles and no per-runner scoping. That's accepted for
    eight people. Export logging and a short admin list are the mitigations.
 7. **Option lists live in the database, so nothing in CI checks their translations.** The parity test

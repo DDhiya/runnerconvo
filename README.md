@@ -121,6 +121,7 @@ Also outstanding:
    `TURNSTILE_SECRET` in `.env` read via `config/services.php`, and one `Http::asForm()->post()` to
    `siteverify` in `RegistrationRequest::after()`. A zero-code first step is one Cloudflare
    edge rate-limiting rule on `POST /register`.
-3. **Confirmation email** - needs real mail (prod is `MAIL_MAILER=log`) and the `support@` mailbox.
+3. **Confirmation email** - mail itself works in prod since 2026-09-25 (Resend; see "Mail" in
+   `docs/deploy.md`). What's left is a Mailable, sent after a booking is saved.
 4. **Master/PhD matric format** - `Booking::matricRuleFor()` accepts any 5-15 letter/digit value
    for them until the real format is confirmed (`TODO(matric)`).
