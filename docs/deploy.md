@@ -227,7 +227,7 @@ JP_EMAIL=support@jubahpanda.my
 # a kill switch, then config:cache. See "Registration: close, reopen, kill switch" below.
 JP_REGISTER_URL=
 JP_REGISTRATION_CLOSES_AT="2026-10-21 23:59"
-# Extra new-booking alert inboxes on top of JP_EMAIL, comma-separated. Personal addresses
+# Who gets the new-booking alert, comma-separated. NOT JP_EMAIL (see "Mail"). Personal addresses
 # live here only, never in git. See "Mail" below.
 JP_NOTIFY_EMAILS=
 JP_ADDRESS=
@@ -663,7 +663,7 @@ cd /opt/runnerconvo/runnerconvo && sudo -u runnerconvo php artisan tinker
 | Email | To | Language |
 |---|---|---|
 | `BookingConfirmation` | The graduate, **only if** they filled in the optional email field | The one they registered in |
-| `NewBookingAlert` | `JP_EMAIL` plus every address in `JP_NOTIFY_EMAILS`, as **one** message | English |
+| `NewBookingAlert` | Every address in `JP_NOTIFY_EMAILS` (blank = no alert), as **one** message. Never `JP_EMAIL`: the app sends as `support@`, so an alert to `support@` only shows up in its Sent folder | English |
 
 Both are sent with `defer()`, i.e. after the done page has already been returned, and both are
 best-effort: a Resend failure is logged to `storage/logs/laravel.log` and the booking is unaffected

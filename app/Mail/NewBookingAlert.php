@@ -9,7 +9,7 @@ use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 
 /**
- * Sent to the team (JP_EMAIL plus JP_NOTIFY_EMAILS) for every new booking, so nobody has to
+ * Sent to JP_NOTIFY_EMAILS (not JP_EMAIL, see BookingMailer) for every new booking, so nobody has to
  * keep /admin open. English, like the rest of the admin. It carries personal data, which is
  * why the privacy notice names the team mailbox and the mail provider.
  */

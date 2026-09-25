@@ -122,7 +122,7 @@ Also outstanding:
    `siteverify` in `RegistrationRequest::after()`. A zero-code first step is one Cloudflare
    edge rate-limiting rule on `POST /register`.
 3. ~~Confirmation email~~ - done: graduates who give the optional email get a bilingual
-   confirmation, and every booking alerts `JP_EMAIL` + `JP_NOTIFY_EMAILS` (see "Mail" in
+   confirmation, and every booking alerts the inboxes in `JP_NOTIFY_EMAILS` (see "Mail" in
    `docs/deploy.md`). Next step there, if wanted: a status-change email ("your robe is ready").
 4. **Master/PhD matric format** - `Booking::matricRuleFor()` accepts any 5-15 letter/digit value
    for them until the real format is confirmed (`TODO(matric)`).

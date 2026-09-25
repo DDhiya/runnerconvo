@@ -25,7 +25,7 @@ class BookingMailer
                 ->send(new BookingConfirmation($booking)), report: true);
         }
 
-        // One message to every team address, not one each: Resend's free tier counts messages.
+        // One message to every alert address, not one each: Resend's free tier counts messages.
         $team = static::teamRecipients();
         if ($team) {
             rescue(fn () => Mail::to($team)
@@ -34,10 +34,16 @@ class BookingMailer
         }
     }
 
-    /** JP_EMAIL plus JP_NOTIFY_EMAILS, de-duplicated. @return list<string> */
+    /**
+     * JP_NOTIFY_EMAILS only, de-duplicated. Deliberately NOT JP_EMAIL: the app sends as
+     * support@, so an alert addressed to support@ lands in that mailbox's Sent folder, where
+     * nobody looks. Empty list = no alert.
+     *
+     * @return list<string>
+     */
     public static function teamRecipients(): array
     {
-        return collect([config('jubahrunner.email'), ...config('jubahrunner.notify_emails', [])])
+        return collect(config('jubahrunner.notify_emails', []))
             ->filter()
             ->map(fn (string $address) => strtolower(trim($address)))
             ->unique()

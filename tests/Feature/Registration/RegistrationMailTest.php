@@ -21,7 +21,7 @@ class RegistrationMailTest extends TestCase
         $this->seedOptions();
         config([
             'jubahrunner.email' => 'support@jubahpanda.my',
-            'jubahrunner.notify_emails' => ['owner@example.com', 'SUPPORT@jubahpanda.my'],
+            'jubahrunner.notify_emails' => ['owner@example.com'],
         ]);
     }
 
@@ -51,17 +51,31 @@ class RegistrationMailTest extends TestCase
         Mail::assertSent(NewBookingAlert::class, 1);
     }
 
-    public function test_the_team_alert_is_one_message_to_every_team_address_deduplicated(): void
+    public function test_the_alert_is_one_message_to_the_notify_list_only_never_to_jp_email(): void
     {
         Mail::fake();
+        // A duplicate in a different case collapses to one recipient.
+        config(['jubahrunner.notify_emails' => ['owner@example.com', 'OWNER@example.com', 'second@example.com']]);
 
         $this->post('/register', $this->validPayload());
 
+        // JP_EMAIL (support@) is the sending address: an alert to it only lands in Sent.
         Mail::assertSent(NewBookingAlert::class, function (NewBookingAlert $mail) {
-            return $mail->hasTo('support@jubahpanda.my')
-                && $mail->hasTo('owner@example.com')
+            return $mail->hasTo('owner@example.com')
+                && $mail->hasTo('second@example.com')
+                && ! $mail->hasTo('support@jubahpanda.my')
                 && count($mail->to) === 2;
         });
+    }
+
+    public function test_no_notify_list_means_no_alert(): void
+    {
+        Mail::fake();
+        config(['jubahrunner.notify_emails' => []]);
+
+        $this->post('/register', $this->validPayload())->assertRedirect(route('register.done'));
+
+        Mail::assertNotSent(NewBookingAlert::class);
     }
 
     public function test_an_invalid_email_is_a_localised_validation_error(): void

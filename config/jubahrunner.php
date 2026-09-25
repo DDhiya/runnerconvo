@@ -32,9 +32,9 @@ return [
 
     'email' => env('JP_EMAIL', 'support@jubahpanda.my'),
 
-    // Extra addresses that get the new-booking alert as well as JP_EMAIL, comma-separated
-    // (e.g. a personal inbox, in case the team mailbox is missed). Set in the VPS .env only:
-    // personal addresses do not belong in git.
+    // Who gets the new-booking alert, comma-separated. NOT JP_EMAIL: mail sent as support@
+    // to support@ only shows up in its Sent folder. Blank = no alert. Set in the VPS .env
+    // only: personal addresses do not belong in git.
     'notify_emails' => array_values(array_filter(array_map('trim', explode(',', (string) env('JP_NOTIFY_EMAILS', ''))))),
 
     // Blank (the default) means the in-app form at /register. Set it only as an
