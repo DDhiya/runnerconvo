@@ -378,8 +378,8 @@ curl -sI https://jubahpanda.my/admin | head -1                           # 302 t
 
 # Registration form (after the bookings deploy below).
 curl -sI https://jubahpanda.my/register | head -1                        # 200
-curl -s  https://jubahpanda.my/register | grep -c 'contact_me_by_fax_only'   # 1 (the honeypot)
-curl -s  -o /dev/null -w '%{http_code}\n' -X POST https://jubahpanda.my/register   # 419 (no CSRF token)
+curl -s  https://jubahpanda.my/register | grep -c 'contact_me_by_fax_only'   # 1 (the honeypot) - only once options exist; until then the page says "opens soon"
+curl -s  -o /dev/null -w '%{http_code}\n' -X POST https://jubahpanda.my/register   # 302 back to /register (no CSRF token: the expired-token handler)
 curl -sI https://jubahpanda.my/register/done | grep -i location          # -> /register (no session)
 curl -sI https://jubahpanda.my/admin/bookings | head -1                  # 302 to /admin/login
 curl -sI https://jubahpanda.my/privacy | head -1                         # 200

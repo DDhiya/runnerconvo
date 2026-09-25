@@ -967,7 +967,7 @@ php artisan jubahpanda:purge-bookings --dry-run
 ```bash
 curl -sI https://jubahpanda.my/register | head -1                        # 200
 curl -s  https://jubahpanda.my/register | grep -c 'contact_me_by_fax_only' # 1
-curl -s  -o /dev/null -w '%{http_code}\n' -X POST https://jubahpanda.my/register  # 419 (no CSRF token)
+curl -s  -o /dev/null -w '%{http_code}\n' -X POST https://jubahpanda.my/register  # 302 back to /register (no CSRF token: the expired-token handler)
 curl -sI https://jubahpanda.my/register/done | grep -i location          # → /register
 curl -sI https://jubahpanda.my/admin/bookings | head -1                  # 302 to /admin/login
 curl -s  https://jubahpanda.my/ | grep -o 'href="[^"]*register"' | sort -u  # after flip: https://jubahpanda.my/register
