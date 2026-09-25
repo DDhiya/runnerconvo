@@ -2,8 +2,7 @@
 
 > Implementation plan. Written 2026-09-25 against commit `e568602`.
 >
-> **Status (2026-09-25): implemented locally, not yet deployed.** Phases 1-5 and the docs are in the
-> working tree with 106 passing tests. Phase 6 deployment steps live in `docs/deploy.md` under
+> **Status (2026-09-25): deployed to production, form still UNLINKED.** The code, migrations and cron are live; the Register buttons still point at WhatsApp (`JP_REGISTER_URL` pinned) until the option lists are entered and the flip. Phases 1-5 and the docs have 106 passing tests. Phase 6 deployment steps live in `docs/deploy.md` under
 > "Adding the registration form". What differs from the plan below:
 >
 > - Booking routes bind on `{booking}` with `Booking::getRouteKeyName() = 'reference'`, rather than
