@@ -82,7 +82,7 @@ exactly **two** places, both outside application code:
 
 No Blade template or translation string contains it. `config/jubahrunner.php` holds contact details
 (WhatsApp, Instagram, registration form, email, pickup address) but no site hostname — its one
-domain-shaped value is the `hello@jubahpanda.my` fallback for `JP_EMAIL`, a contact address, not the
+domain-shaped value is the `support@jubahpanda.my` fallback for `JP_EMAIL`, a contact address, not the
 URL the app serves itself on. Every value there is `env()`-overridable from `.env`. See "Switching
 to the real domain" at the bottom.
 
@@ -523,7 +523,9 @@ an option that booking used *before* deleting the booking: it should refuse.
 `/register`. **Undo** is the same edit in reverse (see "Registration: close, reopen, kill switch").
 
 The `support@jubahpanda.my` mailbox must work before the flip: the privacy notice names it as a
-contact for access and correction requests.
+contact for access and correction requests. **Done 2026-09-25.** It forwards through Cloudflare
+Email Routing and prod `.env` has `JP_EMAIL=support@jubahpanda.my`, which the live footer and
+`/privacy` both show. See "Mail".
 
 ### Sessions, cache and queue stay file-backed
 

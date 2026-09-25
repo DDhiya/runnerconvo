@@ -16,8 +16,8 @@
 > - `addcslashes` LIKE-escaping in `Booking::search()` was dropped: SQLite has no default `ESCAPE`
 >   character, so it did nothing, and the term is a bound parameter anyway.
 > - `Booking::label()` from Phase 1 does not exist: the three lists are `BookingOption` rows now.
-> - Not done here because they're operational: entering the option lists, the `support@` mailbox,
->   the deploy and the flip.
+> - Not done here because they're operational: entering the option lists, the `support@` mailbox
+>   (done 2026-09-25), the deploy and the flip.
 
 ## Context
 
@@ -64,7 +64,7 @@ registration form lands".
 | Matric number format | `XXyyaaa`: 2 uppercase course letters, 2-digit intake year, 3-digit running number from `001` (e.g. `CB22001`) | Phase 2 regex `/^[A-Z]{2}\d{2}(?!000)\d{3}$/` |
 | Closing date | 21 October 2026 | `JP_REGISTRATION_CLOSES_AT="2026-10-21 23:59"` (KL time) |
 | VPS location | Malaysia (Johor) | Privacy notice: data stored in Malaysia; no cross-border clause for hosting |
-| Contact email | `support@jubahpanda.my`, **mailbox not yet provisioned** | `JP_EMAIL` default in `config/jubahrunner.php` and `.env.example`; prod `.env` |
+| Contact email | `support@jubahpanda.my`, **live since 2026-09-25** (Cloudflare Email Routing; see "Mail" in `deploy.md`) | `JP_EMAIL` default in `config/jubahrunner.php` and `.env.example`; prod `.env` |
 
 **The mailbox must exist before the flip.** The privacy notice names it as the channel for access and
 correction requests, and the footer already shows `JP_EMAIL` publicly. If it's not ready at launch,
