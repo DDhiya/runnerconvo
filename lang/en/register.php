@@ -28,6 +28,10 @@ return [
             'label' => 'Matric number',
             'hint' => 'Example: CB22001',
         ],
+        'email' => [
+            'label' => 'Email (optional)',
+            'hint' => 'We will email you your booking reference. Leave blank if you prefer WhatsApp only.',
+        ],
         'phone' => [
             'label' => 'WhatsApp number',
             'hint' => 'A Malaysian mobile number, e.g. 012-345 6789. If you are overseas, please WhatsApp us instead.',
@@ -94,6 +98,7 @@ return [
         'address_required' => 'Please enter your Kuantan delivery address.',
         'expired' => 'This page was open for too long. Your answers are still here, please submit again.',
         'matric_format' => 'Use the format CB22001: two letters, a two-digit intake year and a three-digit number.',
+        'email_format' => 'Enter a valid email address, or leave it blank.',
         'phone_format' => 'Enter a Malaysian mobile number, e.g. 012-345 6789 or +60123456789.',
     ],
 
@@ -119,6 +124,7 @@ return [
             'We will share payment details. Self-pickup is paid before we collect your robe; Kuantan delivery is paid on delivery.',
             'We collect your robe from UMPSA and keep it safe until your pickup or delivery.',
         ],
+        'emailed' => 'We are also emailing your reference to :email. If it does not arrive, check your spam folder; this page and WhatsApp are enough on their own.',
         'whatsapp_cta' => 'Message us on WhatsApp',
         'whatsapp_message' => 'Hi JubahPanda, I am :name. My booking reference is :reference.',
         'back' => 'Back to home page',

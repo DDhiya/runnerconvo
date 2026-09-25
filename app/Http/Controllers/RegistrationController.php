@@ -7,12 +7,15 @@ use App\Enums\BookingStatus;
 use App\Http\Requests\RegistrationRequest;
 use App\Models\Booking;
 use App\Models\BookingOption;
+use App\Support\BookingMailer;
 use App\Support\RegistrationWindow;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
+
+use function Illuminate\Support\defer;
 
 class RegistrationController extends Controller
 {
@@ -61,6 +64,10 @@ class RegistrationController extends Controller
 
         // put(), not flash(): a refresh of the done page must still work.
         $request->session()->put('registration.reference', $booking->reference);
+
+        // After the response is sent, so a slow mail provider never delays the done page.
+        // BookingMailer swallows (and reports) its own failures: the booking is already saved.
+        defer(fn () => BookingMailer::sendFor($booking));
 
         return to_route('register.done');
     }

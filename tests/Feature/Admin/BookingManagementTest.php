@@ -97,6 +97,21 @@ class BookingManagementTest extends TestCase
         }
     }
 
+    public function test_email_is_searchable_and_editable(): void
+    {
+        $booking = Booking::factory()->create(['full_name' => 'Has Email', 'email' => 'someone@example.com']);
+        Booking::factory()->create(['full_name' => 'No Email']);
+
+        $this->admin()->get(route('admin.bookings.index', ['q' => 'someone@']))->assertSee('Has Email')->assertDontSee('No Email');
+
+        $this->patch(route('admin.bookings.update', $booking), $this->payload($booking, ['email' => 'New@Example.com']))
+            ->assertSessionDoesntHaveErrors();
+        $this->assertSame('new@example.com', $booking->fresh()->email);
+
+        $this->patch(route('admin.bookings.update', $booking), $this->payload($booking, ['email' => '']));
+        $this->assertNull($booking->fresh()->email);
+    }
+
     public function test_the_show_page_offers_a_whatsapp_link_in_the_registered_language(): void
     {
         $booking = Booking::factory()->create(['phone' => '60123456789', 'locale' => 'ms']);

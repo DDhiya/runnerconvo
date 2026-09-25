@@ -25,9 +25,12 @@ class BookingExportTest extends TestCase
     public function test_the_export_has_a_bom_a_header_row_and_one_line_per_booking(): void
     {
         $runner = Runner::factory()->create(['name' => 'Hanizam']);
-        Booking::factory()->create(['full_name' => 'Aisyah Rahman', 'runner_id' => $runner->id]);
+        Booking::factory()->create(['full_name' => 'Aisyah Rahman', 'runner_id' => $runner->id, 'email' => 'aisyah@example.com']);
 
         $csv = $this->csv();
+
+        $this->assertStringContainsString('Phone,Email,', $csv);
+        $this->assertStringContainsString('aisyah@example.com', $csv);
 
         $this->assertStringStartsWith("\xEF\xBB\xBF", $csv);
         $this->assertStringContainsString('Reference,Created,Status,"Full name"', $csv);

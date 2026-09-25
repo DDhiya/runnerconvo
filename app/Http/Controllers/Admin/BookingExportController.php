@@ -12,7 +12,7 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 class BookingExportController extends Controller
 {
     private const HEADER = [
-        'Reference', 'Created', 'Status', 'Full name', 'Matric', 'Phone', 'Programme level',
+        'Reference', 'Created', 'Status', 'Full name', 'Matric', 'Phone', 'Email', 'Programme level',
         'Faculty', 'Robe size', 'Session', 'Delivery', 'Address', 'Runner', 'Paid',
         'Paid at', 'Payment method', 'Payment reference', 'Amount (RM)', 'Notes', 'Admin notes', 'Language',
     ];
@@ -58,6 +58,7 @@ class BookingExportController extends Controller
             $b->full_name,
             $b->matric_no,
             $b->phone,
+            $b->email,
             $b->programme_level,
             $b->faculty->label_en,
             $b->robeSize->label_en,

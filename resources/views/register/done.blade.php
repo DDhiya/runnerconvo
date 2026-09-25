@@ -24,6 +24,9 @@
             <div class="glass-card mt-8 p-6 text-center sm:p-8">
                 <p class="text-xs font-bold tracking-wide text-ink-muted uppercase">{{ __('register.done.reference_label') }}</p>
                 <p class="mt-2 text-3xl font-extrabold tracking-wider text-brand-700 select-all">{{ $booking->reference }}</p>
+                @if ($booking->email)
+                    <p class="mt-2 text-sm text-ink-soft">{{ __('register.done.emailed', ['email' => $booking->email]) }}</p>
+                @endif
 
                 <dl class="mt-6 grid gap-4 text-left sm:grid-cols-2">
                     <div class="rounded-xl bg-white/70 p-4 ring-1 ring-black/5">

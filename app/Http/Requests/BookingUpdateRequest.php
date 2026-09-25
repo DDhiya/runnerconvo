@@ -52,6 +52,7 @@ class BookingUpdateRequest extends FormRequest
             'full_name' => ['required', 'string', 'max:120'],
             'matric_no' => $matric,
             'phone' => ['required', 'string', 'regex:/^601\d{8,9}$/'],
+            'email' => ['nullable', 'string', 'max:254', 'email:rfc'],
             'programme_level' => ['required', Rule::in(array_keys(trans('register.options.programme_level', [], 'en')))],
             'faculty_id' => ['required', $this->option(BookingOptionType::Faculty, $booking)],
             'robe_size_id' => ['required', $this->option(BookingOptionType::RobeSize, $booking)],

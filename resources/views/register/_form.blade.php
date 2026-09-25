@@ -34,6 +34,11 @@
             <input id="phone" name="phone" type="tel" value="{{ old('phone') }}" required
                    inputmode="tel" autocomplete="tel" placeholder="012-345 6789" class="{{ $input }}" {!! $invalid('phone') !!}>
         </x-field>
+
+        <x-field name="email" :label="__('register.fields.email.label')" :hint="__('register.fields.email.hint')">
+            <input id="email" name="email" type="email" value="{{ old('email') }}" maxlength="254"
+                   inputmode="email" autocomplete="email" autocapitalize="off" spellcheck="false" class="{{ $input }}" {!! $invalid('email') !!}>
+        </x-field>
     </fieldset>
 
     <fieldset class="space-y-4">

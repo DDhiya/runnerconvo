@@ -121,7 +121,8 @@ Also outstanding:
    `TURNSTILE_SECRET` in `.env` read via `config/services.php`, and one `Http::asForm()->post()` to
    `siteverify` in `RegistrationRequest::after()`. A zero-code first step is one Cloudflare
    edge rate-limiting rule on `POST /register`.
-3. **Confirmation email** - mail itself works in prod since 2026-09-25 (Resend; see "Mail" in
-   `docs/deploy.md`). What's left is a Mailable, sent after a booking is saved.
+3. ~~Confirmation email~~ - done: graduates who give the optional email get a bilingual
+   confirmation, and every booking alerts `JP_EMAIL` + `JP_NOTIFY_EMAILS` (see "Mail" in
+   `docs/deploy.md`). Next step there, if wanted: a status-change email ("your robe is ready").
 4. **Master/PhD matric format** - `Booking::matricRuleFor()` accepts any 5-15 letter/digit value
    for them until the real format is confirmed (`TODO(matric)`).

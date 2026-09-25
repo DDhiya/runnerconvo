@@ -28,6 +28,10 @@ return [
             'label' => 'Nombor matrik',
             'hint' => 'Contoh: CB22001',
         ],
+        'email' => [
+            'label' => 'Emel (pilihan)',
+            'hint' => 'Kami akan emel nombor rujukan tempahan anda. Biarkan kosong jika anda mahu WhatsApp sahaja.',
+        ],
         'phone' => [
             'label' => 'Nombor WhatsApp',
             'hint' => 'Nombor mudah alih Malaysia, cth. 012-345 6789. Jika anda di luar negara, sila WhatsApp kami.',
@@ -94,6 +98,7 @@ return [
         'address_required' => 'Sila masukkan alamat penghantaran anda di Kuantan.',
         'expired' => 'Halaman ini terbuka terlalu lama. Jawapan anda masih ada, sila hantar semula.',
         'matric_format' => 'Gunakan format CB22001: dua huruf, tahun kemasukan dua digit dan nombor tiga digit.',
+        'email_format' => 'Masukkan alamat emel yang sah, atau biarkan kosong.',
         'phone_format' => 'Masukkan nombor mudah alih Malaysia, cth. 012-345 6789 atau +60123456789.',
     ],
 
@@ -119,6 +124,7 @@ return [
             'Kami akan kongsikan butiran pembayaran. Ambil sendiri dibayar sebelum kami mengambil jubah anda; penghantaran Kuantan dibayar semasa terima.',
             'Kami ambil jubah anda di UMPSA dan simpan dengan selamat sehingga hari pengambilan atau penghantaran.',
         ],
+        'emailed' => 'Kami juga sedang menghantar nombor rujukan anda ke :email. Jika tidak sampai, semak folder spam; halaman ini dan WhatsApp sudah memadai.',
         'whatsapp_cta' => 'Mesej kami di WhatsApp',
         'whatsapp_message' => 'Hai JubahPanda, saya :name. Nombor rujukan tempahan saya: :reference.',
         'back' => 'Kembali ke laman utama',

@@ -56,6 +56,9 @@ class RegistrationRequest extends FormRequest
             ],
             // Malaysian mobile, same rule as RunnerRequest.
             'phone' => ['required', 'string', 'regex:/^601\d{8,9}$/'],
+            // Optional; only used to email the confirmation. rfc, not dns: validation must never
+            // depend on a network lookup.
+            'email' => ['nullable', 'string', 'max:254', 'email:rfc'],
             // The en list is the source of truth, so the result does not depend on locale.
             'programme_level' => ['required', Rule::in(array_keys(trans('register.options.programme_level', [], 'en')))],
             'faculty_id' => ['required', $this->activeOption(BookingOptionType::Faculty)],
@@ -134,6 +137,8 @@ class RegistrationRequest extends FormRequest
             'matric_no.regex' => __('register.errors.matric_format'),
             'matric_no.unique' => __('register.errors.duplicate'),
             'phone.regex' => __('register.errors.phone_format'),
+            'email.email' => __('register.errors.email_format'),
+            'email.max' => __('register.errors.email_format'),
             'delivery_address.required_if' => __('register.errors.address_required'),
             'documents_ack.accepted' => __('register.errors.accept'),
             'consent.accepted' => __('register.errors.accept'),

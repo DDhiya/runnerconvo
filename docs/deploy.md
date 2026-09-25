@@ -227,6 +227,9 @@ JP_EMAIL=support@jubahpanda.my
 # a kill switch, then config:cache. See "Registration: close, reopen, kill switch" below.
 JP_REGISTER_URL=
 JP_REGISTRATION_CLOSES_AT="2026-10-21 23:59"
+# Extra new-booking alert inboxes on top of JP_EMAIL, comma-separated. Personal addresses
+# live here only, never in git. See "Mail" below.
+JP_NOTIFY_EMAILS=
 JP_ADDRESS=
 JP_MAP_URL=
 EOF
@@ -655,8 +658,23 @@ cd /opt/runnerconvo/runnerconvo && sudo -u runnerconvo php artisan tinker
 >>> Mail::raw('Resend test', fn ($m) => $m->to('you@example.com')->subject('Test'));
 ```
 
-As of 2026-09-25 no app code sends mail — that works, but nothing uses it yet. The first user will
-be a booking confirmation (README, "Next steps").
+**What the app sends** (`App\Support\BookingMailer`, triggered by every new booking):
+
+| Email | To | Language |
+|---|---|---|
+| `BookingConfirmation` | The graduate, **only if** they filled in the optional email field | The one they registered in |
+| `NewBookingAlert` | `JP_EMAIL` plus every address in `JP_NOTIFY_EMAILS`, as **one** message | English |
+
+Both are sent with `defer()`, i.e. after the done page has already been returned, and both are
+best-effort: a Resend failure is logged to `storage/logs/laravel.log` and the booking is unaffected
+(it was saved first). So "the graduate didn't get an email" is never "the booking failed" — the
+admin list is the source of truth. `JP_NOTIFY_EMAILS` holds personal inboxes and lives in the VPS
+`.env` only, comma-separated; change it with the usual edit + `config:cache`.
+
+**Budget:** Resend's free tier is 100 messages/day. Each booking costs 1 (alert) or 2 (alert +
+confirmation), so a launch-day spike above roughly 50-100 bookings/day hits the cap. Over the cap,
+mail fails quietly as above — bookings keep working. If that happens, check the Resend dashboard and
+consider the paid tier for the registration window.
 
 **Resend suspended the account minutes after signup** — an automated check on new accounts. It was
 reinstated after the review form was filled in honestly (low volume, support replies + transactional

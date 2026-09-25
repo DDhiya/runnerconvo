@@ -18,11 +18,11 @@ return [
         ],
         'what' => [
             'title' => 'What we collect',
-            'body' => 'Your full name, matric number, WhatsApp number, faculty, programme level, robe size and convocation session. If you choose cash-on-delivery, your Kuantan delivery address. Optionally, a note. We also record when you agreed to this notice. All fields except the note are obligatory; without them we cannot collect your robe.',
+            'body' => 'Your full name, matric number, WhatsApp number, faculty, programme level, robe size and convocation session. If you choose cash-on-delivery, your Kuantan delivery address. Optionally, your email address (used only to email you your booking confirmation) and a note. We also record when you agreed to this notice. All fields except the email address and the note are obligatory; without them we cannot collect your robe.',
         ],
         'purpose' => [
             'title' => 'Why we use it',
-            'body' => 'To collect your robe from UMPSA on your behalf, to contact you on WhatsApp about your booking, to arrange pickup or delivery, and to keep payment records.',
+            'body' => 'To collect your robe from UMPSA on your behalf, to contact you on WhatsApp about your booking, to arrange pickup or delivery, to email you a booking confirmation if you gave an email address, and to keep payment records.',
         ],
         'source' => [
             'title' => 'Where it comes from',
@@ -30,7 +30,7 @@ return [
         ],
         'disclosure' => [
             'title' => 'Who sees it',
-            'body' => 'Our runners and admins. UMPSA robe-counter staff, when our runner collects your robe on your behalf (your name, matric number and authorisation letter). WhatsApp (Meta), which carries our messages. Cloudflare, which carries traffic to this website, and our hosting provider. Your data is stored on a server in Malaysia (Johor). We do not sell your data.',
+            'body' => 'Our runners and admins. UMPSA robe-counter staff, when our runner collects your robe on your behalf (your name, matric number and authorisation letter). WhatsApp (Meta), which carries our messages. Resend, which delivers our emails, and Google (Gmail), which hosts our team mailbox: each new booking is emailed to our team so it is handled promptly. Cloudflare, which carries traffic to this website, and our hosting provider. Your data is stored on a server in Malaysia (Johor). We do not sell your data.',
         ],
         'retention' => [
             'title' => 'How long we keep it',

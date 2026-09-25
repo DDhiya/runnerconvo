@@ -32,6 +32,11 @@ return [
 
     'email' => env('JP_EMAIL', 'support@jubahpanda.my'),
 
+    // Extra addresses that get the new-booking alert as well as JP_EMAIL, comma-separated
+    // (e.g. a personal inbox, in case the team mailbox is missed). Set in the VPS .env only:
+    // personal addresses do not belong in git.
+    'notify_emails' => array_values(array_filter(array_map('trim', explode(',', (string) env('JP_NOTIFY_EMAILS', ''))))),
+
     // Blank (the default) means the in-app form at /register. Set it only as an
     // override — e.g. back to https://wa.me/... as a KILL SWITCH if the form
     // misbehaves; flipping it is an .env edit + config:cache, no deploy. route()
@@ -52,7 +57,7 @@ return [
     'price_sen' => 4500,
 
     // Bump whenever lang/*/privacy.php changes materially; stored on each booking.
-    'privacy_version' => '2026-09-25',
+    'privacy_version' => '2026-09-25.2',
     'retention_days' => 365,
 
     // Pickup point. The embed URL needs no API key — Google serves a basic

@@ -13,7 +13,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 #[Fillable([
-    'full_name', 'matric_no', 'phone',
+    'full_name', 'matric_no', 'phone', 'email',
     'faculty_id', 'robe_size_id', 'convocation_session_id', 'programme_level',
     'delivery_method', 'delivery_address', 'notes', 'locale',
     'status', 'runner_id', 'admin_notes',
@@ -104,6 +104,14 @@ class Booking extends Model
         );
     }
 
+    /** Trimmed and lowercased; blank becomes null so "no email" is one state, not two. */
+    protected function email(): Attribute
+    {
+        return Attribute::make(
+            set: fn (?string $value) => filled($value) ? strtolower(trim($value)) : null,
+        );
+    }
+
     /** The registrant own WhatsApp chat. */
     protected function whatsappUrl(): Attribute
     {
@@ -134,6 +142,7 @@ class Booking extends Model
         $query->where(function (Builder $q) use ($like, $term) {
             $q->where('reference', 'like', $like)
                 ->orWhere('full_name', 'like', $like)
+                ->orWhere('email', 'like', $like)
                 ->orWhere('matric_no', 'like', '%'.static::normaliseMatric($term).'%');
 
             // "012-345" should find 6012345...: normalise phone-shaped terms the same way

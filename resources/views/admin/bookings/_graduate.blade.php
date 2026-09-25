@@ -14,6 +14,10 @@
         </x-field>
     </div>
 
+    <x-field name="email" label="Email (optional)">
+        <input id="email" name="email" type="email" value="{{ old('email', $booking->email) }}" maxlength="254" class="{{ $input }}">
+    </x-field>
+
     <div class="grid gap-4 sm:grid-cols-2">
         <x-field name="programme_level" label="Programme level">
             <select id="programme_level" name="programme_level" class="{{ $input }}">
